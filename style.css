@@ -515,6 +515,42 @@ h1 {
   display: none;
 }
 
+/* --- Patička a nabídka nové verze --- */
+.paticka {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 8px 16px 24px;
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  font-size: 0.8rem;
+  color: #666666;
+  text-align: center;
+}
+
+/* Lišta „Je dostupná nová verze – načíst“ – přilepená dole, přes celou šířku */
+.aktualizace {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  max-width: 568px;
+  margin: 0 auto;
+  min-height: 56px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1a1a1a;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.aktualizace[hidden] {
+  display: none;
+}
+
 /* DOČASNÉ: panel pro kontrolu otázek z posuvnik.js (po kontrole smazat celý blok) */
 .kontrola {
   margin-bottom: 16px;

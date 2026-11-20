@@ -55,6 +55,18 @@ projektu, nikdy globálně. Složka `.venv` je v `.gitignore`.
 - Všechny texty v aplikaci piš česky.
 - Komentáře v kódu piš česky.
 
+## PWA a offline (service worker)
+- Service worker je `sw.js`, registruje ho `pwa.js`. Ukládá soubory aplikace do mezipaměti (cache-first).
+- **Při každé změně souborů aplikace (HTML, CSS, JS, `data/otazky.json`, `data/pravidla.json`,
+  obrázky, ikony, `manifest.json`) se musí zvýšit `CACHE_VERZE` v `sw.js`.** Jinak uživatelé
+  (i já při testování) dál uvidí staré soubory a nabídka „Je dostupná nová verze – načíst“ se neukáže.
+- Nový soubor aplikace přidat i do seznamu `SOUBORY` v `sw.js`. Obrázky k otázkám se doplňují
+  automaticky podle `data/otazky.json`.
+- Do mezipaměti nepatří `data/zdroj/` ani `nastroje/`.
+- `nastroje/kontrola.py` ověřuje, že všechny soubory ze seznamu `SOUBORY` existují.
+- Při vývoji: ve vývojářských nástrojích prohlížeče (Application → Service workers) lze zapnout
+  „Update on reload“, aby se změny projevily hned.
+
 ## Manuál v aplikaci
 - Obrazovka „Jak aplikace funguje“ (`<section id="manual">` v `index.html`) popisuje chování aplikace.
 - Při každé změně chování, které uživatel uvidí, manuál aktualizovat ve stejném kroku.

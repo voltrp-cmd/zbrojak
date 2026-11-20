@@ -7,6 +7,13 @@
   <!-- Barva horní lišty prohlížeče na mobilu -->
   <meta name="theme-color" content="#1f5fbf">
   <title>Zbroják</title>
+  <!-- PWA: manifest (název, ikony, spuštění bez lišty prohlížeče) -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="ikony/ikona-192.png" type="image/png">
+  <!-- iPhone/iPad manifest nečte celý – ikonu a režim „bez lišty“ potřebují zvlášť -->
+  <link rel="apple-touch-icon" href="ikony/ikona-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Zbroják">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -121,6 +128,17 @@
           oprávnění a přeruší ho první neúspěšný test stejného typu.</li>
         <li>Časový limit a minima jsou z neoficiálního zdroje (war-zone.cz), v nařízení vlády 238/2025 Sb. tato čísla nejsou.
           Skutečná zkouška se může lišit.</li>
+      </ul>
+
+      <h3>Instalace a offline</h3>
+      <ul>
+        <li>Aplikaci lze nainstalovat na plochu. V Chrome a Edge na počítači i Androidu použijte nabídku
+          „Nainstalovat aplikaci“ (ikona v adresním řádku nebo v menu ⋮). Na iPhonu v Safari ťukněte na Sdílet
+          a „Přidat na plochu“.</li>
+        <li>Nainstalovaná aplikace se otevírá bez lišty prohlížeče.</li>
+        <li>Po prvním načtení si aplikace uloží všechny otázky i obrázky a funguje i bez internetu.</li>
+        <li>Když vyjde nová verze, dole se objeví „Je dostupná nová verze – načíst“. Ťuknutím se načte.
+          Rozdělaný cvičný test se tím zruší, proto ho raději nejdřív dokončete.</li>
       </ul>
 
       <h3>Kde se ukládá pokrok</h3>
@@ -243,12 +261,21 @@
     </section>
   </main>
 
+  <footer class="paticka">
+    Neoficiální výuková aplikace. Otázky: soubor testových otázek MV ČR. Bez záruky správnosti.
+  </footer>
+
+  <!-- Nabídka nové verze (ukáže ji pwa.js, když service worker stáhne novou verzi) -->
+  <button id="aktualizace" class="aktualizace" type="button" hidden>Je dostupná nová verze – načíst</button>
+
   <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
   <!-- pokrok.js musí být první – app.js i test.js z něj čtou -->
   <script src="pokrok.js"></script>
   <script src="app.js"></script>
   <script src="test.js"></script>
   <script src="muj-pokrok.js"></script>
+  <!-- PWA: registrace service workeru (offline režim, nabídka nové verze) -->
+  <script src="pwa.js"></script>
   <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).
        DOČASNÉ: posuvník pro kontrolu otázek (po kontrole smazat i soubor posuvnik.js). -->
   <script>

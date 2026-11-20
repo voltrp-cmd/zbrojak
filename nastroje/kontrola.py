@@ -57,6 +57,36 @@ def zkontroluj_pravidla(otazek_v_testu):
     return chyby
 
 
+def zkontroluj_sw():
+    """Ověří, že všechny soubory ze seznamu SOUBORY v sw.js existují.
+    Chybějící soubor by způsobil, že se service worker nenainstaluje a offline režim nebude fungovat."""
+    import re
+
+    soubor = PROJEKT / "sw.js"
+    try:
+        text = soubor.read_text(encoding="utf-8")
+    except OSError as e:
+        return [f"sw.js: nejde přečíst ({e})"]
+
+    seznam = re.search(r"const SOUBORY = \[(.*?)\];", text, re.S)
+    verze = re.search(r"const CACHE_VERZE = (\d+);", text)
+    if not seznam or not verze:
+        return ["sw.js: nenalezen seznam SOUBORY nebo CACHE_VERZE"]
+
+    cesty = re.findall(r'"([^"]+)"', seznam.group(1))
+    chyby = []
+    for cesta in cesty:
+        if cesta == "./":
+            continue  # kořen = index.html
+        if not (PROJEKT / cesta).is_file():
+            chyby.append(f"sw.js: soubor {cesta} ze seznamu SOUBORY neexistuje")
+        if cesta.startswith(("data/zdroj", "nastroje")):
+            chyby.append(f"sw.js: {cesta} do offline mezipaměti nepatří")
+
+    print(f"\nOffline (sw.js): CACHE_VERZE {verze.group(1)}, {len(cesty)} souborů v seznamu SOUBORY")
+    return chyby
+
+
 def main():
     data = json.loads(SOUBOR.read_text(encoding="utf-8"))
     oddily = data.get("oddily", {})
@@ -128,6 +158,9 @@ def main():
 
     # 8) Pravidla cvičného testu (data/pravidla.json)
     chyby.extend(zkontroluj_pravidla(sum(o["otazek_v_testu"] for o in oblasti.values())))
+
+    # 9) Soubory pro offline režim (seznam SOUBORY v sw.js) musí existovat
+    chyby.extend(zkontroluj_sw())
 
     if chyby:
         print(f"\nNALEZENO CHYB: {len(chyby)}")
