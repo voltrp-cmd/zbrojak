@@ -2,13 +2,31 @@
 <html lang="cs">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- viewport-fit=cover: stránka využije celý displej i u telefonů s výřezem -->
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <!-- Barva horní lišty prohlížeče na mobilu -->
+  <meta name="theme-color" content="#1f5fbf">
   <title>Zbroják</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Nauka pro zbrojní průkaz</h1>
-  <p>Ahoj Petře, tohle je moje první aplikace.
-    Učím se ta měj tropělivost.
-  </p>
+  <main>
+    <h1>Nauka pro zbrojní průkaz</h1>
+
+    <!-- Kartička s jednou otázkou -->
+    <section class="karta">
+      <p id="pocitadlo" class="pocitadlo"></p>
+      <h2 id="otazka" class="otazka"></h2>
+
+      <!-- Sem app.js vloží tlačítka s odpověďmi -->
+      <div id="odpovedi" class="odpovedi"></div>
+
+      <!-- Tlačítko je na začátku skryté (atribut hidden) -->
+      <button id="dalsi" class="tlacitko-dalsi" hidden>Další otázka</button>
+    </section>
+  </main>
+
+  <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
+  <script src="app.js"></script>
 </body>
 </html>

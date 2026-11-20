@@ -1,0 +1,131 @@
+/* Základní nastavení: šířka prvků včetně okrajů, systémové písmo */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #f2f4f7;
+  color: #1a1a1a;
+  /* Telefon nebude sám zvětšovat písmo při otočení na šířku */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Obsah má na mobilu okraj 16 px a na velké obrazovce se nerozplizne do šířky.
+   env(safe-area-inset-…) přidá místo navíc u výřezu a spodní lišty iPhonu. */
+main {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+/* Společné pro všechna tlačítka na dotyk:
+   - touch-action: manipulation zruší zpoždění kvůli dvojitému ťuknutí (zoom)
+   - průhledné zvýraznění odstraní šedý záblesk po ťuknutí na iPhonu */
+button {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1 {
+  font-size: 1.4rem;
+  margin: 8px 0 16px;
+}
+
+/* Bílá kartička s otázkou */
+.karta {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pocitadlo {
+  margin: 0 0 4px;
+  color: #666666;
+  font-size: 0.9rem;
+}
+
+.otazka {
+  font-size: 1.15rem;
+  margin: 0 0 16px;
+}
+
+/* Odpovědi pod sebou s mezerou */
+.odpovedi {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Tlačítko odpovědi: přes celou šířku a dost vysoké na prst (min. 56 px) */
+.odpoved {
+  width: 100%;
+  min-height: 56px;
+  padding: 12px 16px;
+  font-size: 1rem;
+  font-family: inherit;
+  text-align: left;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 2px solid #c5cbd3;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+/* Viditelná odezva při stisknutí prstem */
+.odpoved:active:not(:disabled) {
+  background: #e8eef7;
+  border-color: #1f5fbf;
+}
+
+/* Po odpovězení tlačítka zešednou, ale barevná zůstanou čitelná */
+.odpoved:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+/* Správná odpověď – zelená */
+.odpoved.spravne {
+  background: #d4f5dc;
+  border-color: #1e8e3e;
+  opacity: 1;
+}
+
+/* Špatně zvolená odpověď – červená */
+.odpoved.spatne {
+  background: #fbd9d9;
+  border-color: #c62828;
+  opacity: 1;
+}
+
+/* Tlačítko „Další otázka“ */
+.tlacitko-dalsi {
+  width: 100%;
+  min-height: 56px;
+  margin-top: 20px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1f5fbf;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tlacitko-dalsi:active {
+  background: #174a96;
+}
+
+/* Atribut hidden musí tlačítko opravdu skrýt */
+.tlacitko-dalsi[hidden] {
+  display: none;
+}
