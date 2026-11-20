@@ -21,6 +21,12 @@
       <!-- Sem app.js vloží tlačítka oblastí -->
       <div id="oblasti-tlacitka" class="oblasti-tlacitka"></div>
 
+      <!-- Opakování chyb (počet doplní app.js; bez chyb je tlačítko neaktivní) -->
+      <button id="chyby-start" class="tlacitko-oblast tlacitko-chyby" type="button" disabled>
+        <span class="tlacitko-oblast-nazev">Opakovat chyby</span>
+        <span id="chyby-popis" class="tlacitko-oblast-pocet"></span>
+      </button>
+
       <!-- Cvičný test (popisek s počtem otázek a minutami doplní test.js) -->
       <button id="test-start" class="tlacitko-oblast tlacitko-test" type="button">
         <span class="tlacitko-oblast-nazev">Cvičný test</span>
@@ -29,7 +35,34 @@
       <!-- Série úspěšných testů („prospěl 3× za sebou“) doplní test.js -->
       <p id="test-serie" class="test-serie"></p>
 
-      <button id="manual-otevrit" class="tlacitko-zpet tlacitko-manual" type="button">Jak aplikace funguje</button>
+      <button id="pokrok-otevrit" class="tlacitko-zpet tlacitko-manual" type="button">Můj pokrok</button>
+      <button id="manual-otevrit" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">Jak aplikace funguje</button>
+    </section>
+
+    <!-- Můj pokrok: souhrn, historie testů, záloha a smazání (obsluhuje muj-pokrok.js) -->
+    <section id="muj-pokrok" hidden>
+      <button id="pokrok-zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <h2 class="menu-nadpis">Můj pokrok</h2>
+      <!-- Zpráva o výsledku exportu, importu nebo smazání -->
+      <p id="pokrok-zprava" class="pokrok-zprava" hidden></p>
+
+      <ul id="pokrok-souhrn" class="vysledek-oblasti"></ul>
+
+      <h3 class="pokrok-nadpis">Historie cvičných testů</h3>
+      <div id="pokrok-historie" class="pokrok-historie"></div>
+
+      <h3 class="pokrok-nadpis">Záloha</h3>
+      <p class="poznamka pokrok-poznamka">Pokrok je uložený jen v tomto prohlížeči. Zálohou ho přenesete
+        do jiného zařízení nebo ochráníte před smazáním.</p>
+      <div class="test-navigace">
+        <button id="pokrok-export" class="tlacitko-zpet" type="button">Stáhnout zálohu</button>
+        <button id="pokrok-import" class="tlacitko-zpet" type="button">Nahrát zálohu</button>
+      </div>
+      <!-- Skryté políčko pro výběr souboru; otevře ho tlačítko „Nahrát zálohu“ -->
+      <input id="pokrok-soubor" type="file" accept=".json,application/json" hidden>
+
+      <h3 class="pokrok-nadpis">Smazání</h3>
+      <button id="pokrok-smazat" class="tlacitko-smazat" type="button">Smazat veškerý pokrok</button>
     </section>
 
     <!-- Manuál. Čísla ve <span data-manual="…"> doplní test.js z dat a pravidel. -->
@@ -64,6 +97,15 @@
         <li>V menu je u každé oblasti „Umím X z N“ a zelený pruh.</li>
       </ul>
 
+      <h3>Opakovat chyby</h3>
+      <ul>
+        <li>Tlačítko „Opakovat chyby“ v menu dá dohromady otázky ze všech oblastí, na které jste naposledy
+          odpověděli špatně (v procvičování i v testu), a zamíchá je.</li>
+        <li>Seznam se určí na začátku kola a během kola se nemění – opravená otázka nezmizí uprostřed.</li>
+        <li>Po poslední otázce uvidíte, kolik chyb jste opravili. „Další kolo“ dá jen chyby, které zbývají.</li>
+        <li>Když žádné chyby nemáte, tlačítko je neaktivní.</li>
+      </ul>
+
       <h3>Cvičný test</h3>
       <ul>
         <li>Test má <span data-manual="test-pocet">30</span> otázek vybraných náhodně ze všech oblastí
@@ -87,6 +129,17 @@
         <li>V jiném prohlížeči, na jiném zařízení nebo na jiné adrese aplikace začínáte od nuly.</li>
         <li>Smazáním dat prohlížeče (historie, cookies a data webů) se pokrok smaže.</li>
         <li>Safari na iPhonu může data smazat, když aplikaci 7 dní neotevřete.</li>
+        <li>Proto si občas stáhněte zálohu (viz níže).</li>
+      </ul>
+
+      <h3>Můj pokrok</h3>
+      <ul>
+        <li>V menu pod tlačítkem „Můj pokrok“ najdete souhrn (kolik otázek umíte a kolik jste zkoušeli)
+          a historii cvičných testů od nejnovějšího. Ťuknutím na test se rozbalí výsledek po oblastech a čas.</li>
+        <li>„Stáhnout zálohu“ uloží pokrok do souboru JSON (např. zbrojak-pokrok-2026-11-20.json).</li>
+        <li>„Nahrát zálohu“ načte pokrok ze souboru. Současný pokrok se tím <strong>nahradí</strong>, ne sloučí –
+          před nahráním se aplikace zeptá a ukáže, co se čím nahradí.</li>
+        <li>„Smazat veškerý pokrok“ smaže odpovědi i historii testů. Aplikace se zeptá dvakrát, smazání nejde vrátit.</li>
       </ul>
     </section>
 
@@ -109,6 +162,16 @@
         <!-- Tlačítko je na začátku skryté (atribut hidden) -->
         <button id="dalsi" class="tlacitko-dalsi" hidden>Další otázka</button>
       </section>
+    </section>
+
+    <!-- Konec kola opakování chyb -->
+    <section id="chyby-konec" hidden>
+      <h2 class="menu-nadpis">Kolo hotovo</h2>
+      <p id="chyby-konec-text" class="test-info"></p>
+      <div class="test-navigace">
+        <button id="chyby-dalsi-kolo" class="tlacitko-dalsi" type="button">Další kolo</button>
+        <button id="chyby-menu" class="tlacitko-zpet" type="button">Zpět do menu</button>
+      </div>
     </section>
 
     <!-- Cvičný test, krok 1: výběr typu zbrojního oprávnění -->
@@ -185,6 +248,7 @@
   <script src="pokrok.js"></script>
   <script src="app.js"></script>
   <script src="test.js"></script>
+  <script src="muj-pokrok.js"></script>
   <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).
        DOČASNÉ: posuvník pro kontrolu otázek (po kontrole smazat i soubor posuvnik.js). -->
   <script>

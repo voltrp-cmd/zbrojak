@@ -143,6 +143,12 @@ function umimOtazku(cislo) {
   return Boolean(zaznam) && zaznam.serie >= UMIM_HRANICE;
 }
 
+// Je otázka „chyba“? (poslední odpověď na ni byla špatná – série je 0 a aspoň jednou špatně)
+function jeChyba(cislo) {
+  const zaznam = pokrok.otazky[String(cislo)];
+  return Boolean(zaznam) && zaznam.serie === 0 && zaznam.spatne > 0;
+}
+
 // Zapíše výsledek cvičného testu do historie a pokrok uloží
 function zaznamenejTest(zaznam) {
   pokrok.testy.push(zaznam);
@@ -163,6 +169,54 @@ function serieProspechu(typ) {
     serie++;
   }
   return serie;
+}
+
+// --- Záloha, obnova a smazání (obrazovka „Můj pokrok“) -------------------------
+
+// Text zálohy pro export do souboru JSON
+function textZalohy() {
+  return JSON.stringify(pokrok, null, 2);
+}
+
+// Zkontroluje data načtená ze souboru zálohy.
+// Vrátí text chyby, nebo null, když je záloha v pořádku.
+function zkontrolujZalohu(data) {
+  if (!data || data.aplikace !== "zbrojak") {
+    return "Soubor není záloha pokroku z této aplikace.";
+  }
+  if (typeof data.verze !== "number" || !data.otazky || typeof data.otazky !== "object" || !Array.isArray(data.testy)) {
+    return "Záloha je poškozená nebo neúplná.";
+  }
+  if (data.verze > POKROK_VERZE) {
+    return "Záloha je z novější verze aplikace a tato verze ji neumí načíst.";
+  }
+  return null;
+}
+
+// Uloží data přímo do úložiště. Při úspěchu zase povolí běžné ukládání
+// (mohlo být vypnuté kvůli datům z novější verze). Vrátí true/false.
+function prepisUloziste(data) {
+  try {
+    localStorage.setItem(POKROK_KLIC, JSON.stringify(data));
+  } catch (chyba) {
+    console.error(chyba);
+    return false;
+  }
+  pokrok = data;
+  pokrokUkladat = true;
+  return true;
+}
+
+// Nahradí současný pokrok zálohou (už zkontrolovanou funkcí zkontrolujZalohu)
+function nahradPokrok(data) {
+  return prepisUloziste(data);
+}
+
+// Smaže veškerý pokrok (odpovědi i historii testů)
+function smazPokrok(verzePdf) {
+  const prazdny = prazdnyPokrok();
+  prazdny.verze_pdf = verzePdf || null;
+  return prepisUloziste(prazdny);
 }
 
 // Načteme pokrok hned při startu

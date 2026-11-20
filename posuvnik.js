@@ -132,7 +132,7 @@ document.getElementById("kontrola-vyplnit").addEventListener("click", function (
   } else {
     // Počet omezíme na rozsah 0 až počet otázek v testu
     const pocet = Math.min(Math.max(Math.round(Number(zadano)) || 0, 0), test.otazky.length);
-    // Náhodně vybereme, které otázky budou správně (zamichej je z test.js)
+    // Náhodně vybereme, které otázky budou správně (zamichej je z app.js)
     const spravneIndexy = zamichej(
       test.otazky.map(function (o, i) {
         return i;

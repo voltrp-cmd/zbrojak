@@ -3,7 +3,7 @@
 // Pravidla (časový limit, minimum správných odpovědí) jsou v data/pravidla.json.
 // Počty otázek z jednotlivých oblastí jsou v hlavičce data/otazky.json (oblasti → otazek_v_testu).
 //
-// Využívá z app.js: vsechnyOtazky, oblasti, nacitani, ukazObrazovku, nastavObrazek, slovoOtazek.
+// Využívá z app.js: vsechnyOtazky, oblasti, nacitani, ukazObrazovku, nastavObrazek, slovoOtazek, zamichej.
 
 // Názvy typů zbrojního oprávnění (klíče odpovídají "minimum_spravnych" v pravidla.json)
 const TYPY_OPRAVNENI = {
@@ -25,17 +25,7 @@ let test = null;
 
 // --- Sestavení testu --------------------------------------------------------
 
-// Zamíchá pole náhodně (Fisher–Yates) a vrátí nové pole, původní nezmění
-function zamichej(pole) {
-  const kopie = pole.slice();
-  for (let i = kopie.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const docasna = kopie[i];
-    kopie[i] = kopie[j];
-    kopie[j] = docasna;
-  }
-  return kopie;
-}
+// (Funkce zamichej() je v app.js, používá ji i opakování chyb.)
 
 // Sestaví otázky pro jeden test: z každé oblasti náhodně tolik otázek, kolik určuje
 // "otazek_v_testu", bez opakování, a nakonec je všechny promíchá.

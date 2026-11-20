@@ -213,6 +213,18 @@ h1 {
   background: #1e8e3e;
 }
 
+/* Tlačítko „Opakovat chyby“ – oddělené od oblastí, s červeným okrajem */
+.tlacitko-chyby {
+  margin-top: 20px;
+  border-color: #c62828;
+}
+
+.tlacitko-chyby:disabled {
+  cursor: default;
+  opacity: 0.6;
+  border-color: #c5cbd3;
+}
+
 /* --- Obrazovka s otázkami --- */
 /* Tlačítko „Zpět do menu“ – méně výrazné než odpovědi, ale dost velké na prst */
 .tlacitko-zpet {
@@ -258,6 +270,75 @@ h1 {
 .tlacitko-manual {
   width: 100%;
   margin-top: 24px;
+}
+
+/* Druhé tlačítko pod „Můj pokrok“ – menší mezera */
+.tlacitko-manual-dalsi {
+  margin-top: 12px;
+}
+
+/* --- Můj pokrok --- */
+.pokrok-nadpis {
+  margin: 24px 0 8px;
+  font-size: 1.05rem;
+}
+
+.pokrok-zprava {
+  margin: 0 0 12px;
+  padding: 12px;
+  background: #e8eef7;
+  border-radius: 10px;
+}
+
+.pokrok-poznamka {
+  margin: 0 0 8px;
+}
+
+.pokrok-historie {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Jeden test v historii; ťuknutím na řádek se rozbalí podrobnosti */
+.historie-polozka {
+  padding: 4px 12px;
+  background: #ffffff;
+  border: 2px solid #c5cbd3;
+  border-left-width: 6px;
+  border-radius: 10px;
+}
+
+.historie-polozka.prospel {
+  border-left-color: #1e8e3e;
+}
+
+.historie-polozka.neprospel {
+  border-left-color: #c62828;
+}
+
+/* Výška řádku přes padding (ne display: flex – to by skrylo šipku pro rozbalení) */
+.historie-polozka summary {
+  padding: 10px 0;
+  cursor: pointer;
+}
+
+.historie-polozka ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+/* Smazání – červené, aby bylo jasné, že je nevratné */
+.tlacitko-smazat {
+  width: 100%;
+  min-height: 48px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #ffffff;
+  background: #c62828;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
 }
 
 /* Manuál: čitelné nadpisy a odstavce */

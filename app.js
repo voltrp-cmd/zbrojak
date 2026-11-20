@@ -25,11 +25,18 @@ const obrazekEl = document.getElementById("obrazek");
 const odpovediEl = document.getElementById("odpovedi");
 const dalsiEl = document.getElementById("dalsi");
 
+const chybyStartEl = document.getElementById("chyby-start");
+const chybyPopisEl = document.getElementById("chyby-popis");
+const chybyDalsiKoloEl = document.getElementById("chyby-dalsi-kolo");
+
 // Pořadí právě zobrazené otázky
 let aktualni = 0;
 
+// Co se právě procvičuje: "oblast" (jedna oblast dokola), nebo "chyby" (kolo opakování chyb)
+let rezim = "oblast";
+
 // Všechny obrazovky aplikace – vždy je vidět jen jedna (používá i test.js)
-const OBRAZOVKY = ["menu", "kviz", "test-vyber", "test", "vysledek", "manual"];
+const OBRAZOVKY = ["menu", "kviz", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok"];
 
 function ukazObrazovku(id) {
   // Při návratu do menu ho překreslíme, aby počty „umím“ odpovídaly novým odpovědím
@@ -40,6 +47,19 @@ function ukazObrazovku(id) {
     document.getElementById(jina).hidden = jina !== id;
   });
   window.scrollTo(0, 0);
+}
+
+// Zamíchá pole náhodně (Fisher–Yates) a vrátí nové pole, původní nezmění
+// (používá opakování chyb, test.js i posuvnik.js)
+function zamichej(pole) {
+  const kopie = pole.slice();
+  for (let i = kopie.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const docasna = kopie[i];
+    kopie[i] = kopie[j];
+    kopie[j] = docasna;
+  }
+  return kopie;
 }
 
 // Nastaví obrázek k otázce, nebo ho skryje, když ho otázka nemá (používá i test.js)
@@ -109,10 +129,16 @@ function vyhodnot(zvolena) {
   dalsiEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// Přechod na další otázku; po poslední začneme znovu od první
+// Přechod na další otázku. Po poslední otázce:
+//   - v procvičování oblasti začneme znovu od první,
+//   - v opakování chyb ukážeme obrazovku „Kolo hotovo“.
 dalsiEl.addEventListener("click", function () {
   aktualni = aktualni + 1;
   if (aktualni >= otazky.length) {
+    if (rezim === "chyby") {
+      zobrazKonecKola();
+      return;
+    }
     aktualni = 0;
   }
   zobrazOtazku();
@@ -167,10 +193,19 @@ function zobrazMenu() {
     });
     oblastiTlacitkaEl.appendChild(tlacitko);
   });
+
+  // Tlačítko „Opakovat chyby“ s počtem chyb; bez chyb je neaktivní
+  const pocetChyb = chybneOtazky().length;
+  chybyStartEl.disabled = pocetChyb === 0;
+  chybyPopisEl.textContent =
+    pocetChyb === 0
+      ? "Žádné chyby k opakování"
+      : pocetChyb + " " + slovoOtazek(pocetChyb) + " s poslední odpovědí špatně";
 }
 
 // Po kliknutí na oblast: vybereme její otázky a ukážeme první z nich
 function spustOblast(kod) {
+  rezim = "oblast";
   otazky = vsechnyOtazky.filter(function (o) {
     return o.oblast === kod;
   });
@@ -180,6 +215,55 @@ function spustOblast(kod) {
   ukazObrazovku("kviz");
   zobrazOtazku();
 }
+
+// --- Opakování chyb ------------------------------------------------------------
+
+// Otázky ze všech oblastí, kde byla poslední odpověď špatná (jeChyba z pokrok.js)
+function chybneOtazky() {
+  return vsechnyOtazky.filter(function (o) {
+    return jeChyba(o.cislo);
+  });
+}
+
+// Spustí jedno kolo opakování: seznam chyb se určí teď a během kola se nemění
+// (opravená otázka tak nezmizí uprostřed kola)
+function spustOpakovaniChyb() {
+  const chyby = chybneOtazky();
+  if (chyby.length === 0) {
+    ukazObrazovku("menu");
+    return;
+  }
+  rezim = "chyby";
+  otazky = zamichej(chyby);
+  aktualni = 0;
+  nazevOblastiEl.textContent = "Opakování chyb";
+
+  ukazObrazovku("kviz");
+  zobrazOtazku();
+}
+
+// Po poslední otázce kola: kolik chyb se opravilo a jestli nějaké zbývají
+function zobrazKonecKola() {
+  const opraveno = otazky.filter(function (o) {
+    return !jeChyba(o.cislo);
+  }).length;
+  const zbyva = chybneOtazky().length;
+
+  document.getElementById("chyby-konec-text").textContent =
+    "Opraveno " + opraveno + " z " + otazky.length + ". " +
+    (zbyva === 0
+      ? "Všechny chyby jsou opravené."
+      : "Zbývá " + zbyva + " " + slovoOtazek(zbyva) + " k opakování.");
+  chybyDalsiKoloEl.hidden = zbyva === 0;
+
+  ukazObrazovku("chyby-konec");
+}
+
+chybyStartEl.addEventListener("click", spustOpakovaniChyb);
+chybyDalsiKoloEl.addEventListener("click", spustOpakovaniChyb);
+document.getElementById("chyby-menu").addEventListener("click", function () {
+  ukazObrazovku("menu");
+});
 
 // Tlačítko „Zpět do menu“
 zpetEl.addEventListener("click", function () {
