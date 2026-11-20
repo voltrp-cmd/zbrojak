@@ -53,6 +53,20 @@ h1 {
   font-size: 0.9rem;
 }
 
+/* Obrázek k otázce: nikdy není širší než kartička, poměr stran zůstane zachovaný.
+   Bílé pozadí, protože obrázky z PDF mají bílý podklad. */
+.obrazek {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto 16px;
+  background: #ffffff;
+}
+
+.obrazek[hidden] {
+  display: none;
+}
+
 .otazka {
   font-size: 1.15rem;
   margin: 0 0 16px;
@@ -129,3 +143,49 @@ h1 {
 .tlacitko-dalsi[hidden] {
   display: none;
 }
+
+/* DOČASNÉ: panel pro kontrolu otázek z kontrola.js (po kontrole smazat celý blok) */
+.kontrola {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: #fff8e1;
+  border: 2px dashed #e0a800;
+  border-radius: 12px;
+}
+
+.kontrola-info {
+  margin: 0 0 8px;
+  font-weight: 600;
+}
+
+.kontrola-radek {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.kontrola-radek button,
+.kontrola-radek input {
+  flex: 1;
+  min-width: 0;
+  min-height: 48px;
+  padding: 8px 12px;
+  font-size: 1rem;
+  font-family: inherit;
+  border: 2px solid #c5cbd3;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.kontrola-zaskrt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+}
+
+.kontrola-zaskrt input {
+  width: 22px;
+  height: 22px;
+}
+/* konec DOČASNÉHO bloku */

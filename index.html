@@ -16,6 +16,9 @@
     <!-- Kartička s jednou otázkou -->
     <section class="karta">
       <p id="pocitadlo" class="pocitadlo"></p>
+      <!-- Obrázek k otázce (jen u některých otázek, jinak je skrytý).
+           Je nad textem otázky, stejně jako v PDF („výše vyobrazený…“). -->
+      <img id="obrazek" class="obrazek" alt="" hidden>
       <h2 id="otazka" class="otazka"></h2>
 
       <!-- Sem app.js vloží tlačítka s odpověďmi -->
@@ -28,5 +31,7 @@
 
   <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
   <script src="app.js"></script>
+  <!-- DOČASNÉ: panel pro kontrolu otázek (po kontrole smazat i soubor kontrola.js) -->
+  <script src="kontrola.js"></script>
 </body>
 </html>

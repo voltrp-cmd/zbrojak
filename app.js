@@ -1,48 +1,15 @@
-// DOČASNÉ: ukázkové otázky jen pro vyzkoušení aplikace.
-// Nejsou to oficiální otázky ze zkoušky, později je nahradíme skutečnými.
-// "spravna" je pořadí správné odpovědi v poli "odpovedi" (počítá se od 0).
-const otazky = [
-  {
-    otazka: "(Ukázka) Jak se má se zbraní vždy zacházet?",
-    odpovedi: [
-      "Jako by byla nabitá",
-      "Jako by byla nenabitá",
-      "Záleží na tom, jestli je zajištěná",
-    ],
-    spravna: 0,
-  },
-  {
-    otazka: "(Ukázka) Kam smí směřovat ústí hlavně zbraně?",
-    odpovedi: [
-      "Kamkoli, pokud je zbraň zajištěná",
-      "Na kamaráda, pokud jde o žert",
-      "Jen bezpečným směrem",
-    ],
-    spravna: 2,
-  },
-  {
-    otazka: "(Ukázka) Kdy má být prst na spoušti?",
-    odpovedi: [
-      "Pořád, aby byla zbraň připravená",
-      "Až když chci vystřelit",
-      "Vždy při nošení zbraně",
-    ],
-    spravna: 1,
-  },
-  {
-    otazka: "(Ukázka) Kdy nemá být prst na spoušti?",
-    odpovedi: [
-      "Když nechci vystřelit",
-      "Až když chci vystřelit",
-      "Při strílení",
-    ],
-    spravna: 0,
-  },
-];
+// Otázky se načítají ze souboru data/otazky.json (z položky "otazky").
+// Každá otázka má mimo jiné:
+//   "otazka"   – text otázky
+//   "odpovedi" – pole tří odpovědí
+//   "spravna"  – pořadí správné odpovědi v poli "odpovedi" (počítá se od 0)
+// Dokud se soubor nenačte, je pole prázdné.
+let otazky = [];
 
 // Prvky stránky, se kterými budeme pracovat
 const pocitadloEl = document.getElementById("pocitadlo");
 const otazkaEl = document.getElementById("otazka");
+const obrazekEl = document.getElementById("obrazek");
 const odpovediEl = document.getElementById("odpovedi");
 const dalsiEl = document.getElementById("dalsi");
 
@@ -55,6 +22,17 @@ function zobrazOtazku() {
 
   pocitadloEl.textContent = "Otázka " + (aktualni + 1) + " z " + otazky.length;
   otazkaEl.textContent = o.otazka;
+
+  // Obrázek ukážeme jen u otázek, které ho mají ("obrazek" není null)
+  if (o.obrazek) {
+    obrazekEl.src = o.obrazek;
+    obrazekEl.alt = "Obrázek k otázce č. " + o.cislo;
+    obrazekEl.hidden = false;
+  } else {
+    obrazekEl.removeAttribute("src");
+    obrazekEl.alt = "";
+    obrazekEl.hidden = true;
+  }
 
   // Smažeme tlačítka z předchozí otázky a skryjeme „Další otázka“
   odpovediEl.innerHTML = "";
@@ -70,6 +48,9 @@ function zobrazOtazku() {
     });
     odpovediEl.appendChild(tlacitko);
   });
+
+  // DOČASNÉ: kontrolní panel z kontrola.js (při odstranění panelu smazat i tento řádek)
+  if (typeof kontrolaPoZobrazeni === "function") kontrolaPoZobrazeni();
 }
 
 // Obarví odpovědi po kliknutí: zvolenou zeleně/červeně a správnou vždy zeleně
@@ -106,5 +87,40 @@ dalsiEl.addEventListener("click", function () {
   window.scrollTo(0, 0);
 });
 
+// Když se otázky nepodaří načíst, ukážeme místo otázky srozumitelnou chybu
+function zobrazChybu(zprava) {
+  pocitadloEl.textContent = "";
+  otazkaEl.textContent = zprava;
+  odpovediEl.innerHTML = "";
+  dalsiEl.hidden = true;
+}
+
+// Načte otázky ze souboru a zobrazí první z nich.
+// fetch() stáhne soubor; trvá to chvíli, proto používáme async/await (počkáme na výsledek).
+async function nactiOtazky() {
+  otazkaEl.textContent = "Načítám otázky…";
+
+  try {
+    const odpoved = await fetch("data/otazky.json");
+    if (!odpoved.ok) {
+      throw new Error("Soubor nenalezen (kód " + odpoved.status + ")");
+    }
+    const data = await odpoved.json();
+    // Soubor obsahuje i údaje o zdroji a oddílech, otázky jsou v položce "otazky"
+    otazky = data.otazky;
+  } catch (chyba) {
+    console.error(chyba);
+    zobrazChybu("Otázky se nepodařilo načíst. Chybí soubor data/otazky.json, nebo je aplikace otevřená přímo ze souboru místo přes webový server.");
+    return;
+  }
+
+  if (otazky.length === 0) {
+    zobrazChybu("Soubor s otázkami je prázdný.");
+    return;
+  }
+
+  zobrazOtazku();
+}
+
 // Spuštění po načtení stránky
-zobrazOtazku();
+nactiOtazky();
