@@ -1,9 +1,10 @@
 // DOČASNÉ: panel pro kontrolu převedených otázek.
 // Umožní listovat otázkami bez odpovídání a ukázat správnou odpověď.
+// Načte se jen s ?ladeni=1 v adrese stránky (zařizuje to index.html).
 //
 // Jak panel odstranit:
-//   1. smazat tento soubor kontrola.js,
-//   2. v index.html smazat řádek <script src="kontrola.js"></script>,
+//   1. smazat tento soubor posuvnik.js,
+//   2. v index.html smazat <script> s podmínkou na „ladeni“ (načítá posuvnik.js),
 //   3. v app.js smazat řádek s kontrolaPoZobrazeni (označený DOČASNÉ),
 //   4. ve style.css smazat blok označený DOČASNÉ.
 //
@@ -82,3 +83,9 @@ kontrolaCisloEl.addEventListener("keydown", function (e) {
 kontrolaSpravnaEl.addEventListener("change", function () {
   kontrolaPrejdiNa(aktualni);
 });
+
+// Posuvník se načítá až dodatečně, takže otázka už může být zobrazená.
+// V tom případě hned doplníme informace o ní a správnou odpověď.
+if (otazky.length > 0) {
+  kontrolaPoZobrazeni();
+}

@@ -31,7 +31,14 @@
 
   <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
   <script src="app.js"></script>
-  <!-- DOČASNÉ: panel pro kontrolu otázek (po kontrole smazat i soubor kontrola.js) -->
-  <script src="kontrola.js"></script>
+  <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).
+       DOČASNÉ: posuvník pro kontrolu otázek (po kontrole smazat i soubor posuvnik.js). -->
+  <script>
+    if (new URLSearchParams(location.search).get("ladeni") === "1") {
+      const skript = document.createElement("script");
+      skript.src = "posuvnik.js";
+      document.body.appendChild(skript);
+    }
+  </script>
 </body>
 </html>

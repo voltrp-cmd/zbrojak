@@ -49,7 +49,7 @@ function zobrazOtazku() {
     odpovediEl.appendChild(tlacitko);
   });
 
-  // DOČASNÉ: kontrolní panel z kontrola.js (při odstranění panelu smazat i tento řádek)
+  // DOČASNÉ: kontrolní panel z posuvnik.js (při odstranění panelu smazat i tento řádek)
   if (typeof kontrolaPoZobrazeni === "function") kontrolaPoZobrazeni();
 }
 
