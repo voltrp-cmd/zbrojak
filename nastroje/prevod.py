@@ -34,6 +34,57 @@ ODDILY = {
     "V": "Zdravotnické minimum",
 }
 
+# --- Oblasti zkoušky ----------------------------------------------------------
+# Test má 4 oblasti s pevným počtem otázek podle nařízení vlády č. 238/2025 Sb.,
+# § 12 odst. 2. PDF ale otázky dělí do 5 oddílů (I–V), proto je přiřazujeme níže.
+ZDROJ_POCTU = "nařízení vlády č. 238/2025 Sb., § 12 odst. 2"
+OBLASTI = {
+    "pravni": {"nazev": "Právní předpisy", "otazek_v_testu": 17},
+    "nauka": {"nazev": "Nauka o zbraních a střelivu", "otazek_v_testu": 5},
+    "bezpecnost": {"nazev": "Bezpečné zacházení se zbraní a střelivem", "otazek_v_testu": 5},
+    "zdravotni": {"nazev": "Zdravotnické minimum", "otazek_v_testu": 3},
+}
+
+# Celé oddíly z PDF, které odpovídají jedné oblasti (oficiální členění PDF):
+ODDIL_NA_OBLAST = {
+    "I": "pravni",  # Zákon o zbraních a střelivu
+    "II": "pravni",  # Prováděcí právní předpisy
+    "III": "pravni",  # Jiné právní předpisy
+    "IV": "nauka",  # Nauka o zbraních a střelivu (kromě otázek níže)
+    "V": "zdravotni",  # Zdravotnické minimum
+}
+
+# Bezpečné zacházení se zbraní a střelivem – otázky vybrané z oddílu IV.
+# NEJDE O OFICIÁLNÍ VYMEZENÍ: PDF (stav k 15. 12. 2025) nemá pro tuto oblast oddíl
+# ani podnadpis, úvod ani obsah ji nevymezují. Jde o VÝBĚR PODLE OBSAHU:
+OTAZKY_BEZPECNOST = [
+    696,  # vyobrazená zbraň „z hlediska zásad bezpečné manipulace“
+    780,  # cizí překážka v hlavni
+    781,  # jaké střelivo lze bezpečně použít
+    782,  # zdeformované nebo zrezivělé střelivo
+    783,  # kdy smí být střelivo použito ke střelbě
+    # 784–799: každá otázka začíná „Za jednu ze zásad bezpečného zacházení
+    # se zbraní a střelivem lze považovat…“
+    784, 785, 786, 787, 788, 789, 790, 791,
+    792, 793, 794, 795, 796, 797, 798, 799,
+]
+
+
+# Otázky, u kterých správná odpověď nemá v PDF kurzívu, ale byla ověřena ručně.
+# U nich se upozornění „správná odpověď není v kurzívě“ nevypisuje.
+OVERENO_RUCNE = [
+    716,  # šedé zvýraznění jednoznačné, kurzíva v PDF chybí, ověřeno pohledem 20. 11. 2026
+    717,  # šedé zvýraznění jednoznačné, kurzíva v PDF chybí, ověřeno pohledem 20. 11. 2026
+]
+
+
+def urci_oblast(cislo, oddil):
+    """Vrátí kód oblasti zkoušky pro otázku."""
+    if cislo in OTAZKY_BEZPECNOST:
+        return "bezpecnost"
+    return ODDIL_NA_OBLAST.get(oddil)
+
+
 # --- Oprava poškozených písmen -------------------------------------------
 # V písmu Calibri jsou spojená písmena (ligatury) uložená bez překladu na text,
 # takže by se z nich stal znak „�“. Podle čísla glyfu víme, o co jde.
@@ -230,6 +281,7 @@ def dokonci(o):
     vysledek = {
         "cislo": o["cislo"],
         "oddil": o["oddil"],
+        "oblast": urci_oblast(o["cislo"], o["oddil"]),
         "otazka": spoj(o["_text"]),
         "odpovedi": [spoj(od["_text"]) for od in o["_odpovedi"]],
         "spravna": spravne[0] if len(spravne) == 1 else None,
@@ -241,8 +293,12 @@ def dokonci(o):
     if len(spravne) != 1:
         problemy.append(f"počet odpovědí se šedým podkladem je {len(spravne)}")
     upozorneni = []
-    if kurziva != podklad:
+    if kurziva != podklad and o["cislo"] not in OVERENO_RUCNE:
         upozorneni.append("správná odpověď není v kurzívě (ověřit ručně)")
+    if vysledek["oblast"] is None:
+        problemy.append("nemá přiřazenou oblast zkoušky")
+    if o["cislo"] in OTAZKY_BEZPECNOST and o["oddil"] != "IV":
+        problemy.append("je v seznamu bezpečného zacházení, ale není z oddílu IV")
     if not vysledek["otazka"]:
         problemy.append("prázdný text otázky")
     if "�" in json.dumps(vysledek, ensure_ascii=False):
@@ -289,6 +345,8 @@ def main():
         "zdroj": "Ministerstvo vnitra – testové otázky ke zkoušce odborné způsobilosti",
         "verze_pdf": "2025-12-15",
         "oddily": ODDILY,
+        "oblasti_zdroj": ZDROJ_POCTU,
+        "oblasti": OBLASTI,
         "otazky": otazky,
     }
     vystup.parent.mkdir(parents=True, exist_ok=True)
