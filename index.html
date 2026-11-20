@@ -26,6 +26,68 @@
         <span class="tlacitko-oblast-nazev">Cvičný test</span>
         <span id="test-start-popis" class="tlacitko-oblast-pocet">Načítám pravidla…</span>
       </button>
+      <!-- Série úspěšných testů („prospěl 3× za sebou“) doplní test.js -->
+      <p id="test-serie" class="test-serie"></p>
+
+      <button id="manual-otevrit" class="tlacitko-zpet tlacitko-manual" type="button">Jak aplikace funguje</button>
+    </section>
+
+    <!-- Manuál. Čísla ve <span data-manual="…"> doplní test.js z dat a pravidel. -->
+    <section id="manual" class="manual" hidden>
+      <button id="manual-zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <h2 class="menu-nadpis">Jak aplikace funguje</h2>
+
+      <h3>Odkud jsou otázky</h3>
+      <p>Všech <span data-manual="pocet-otazek">837</span> otázek je z oficiálního PDF Ministerstva vnitra
+        s testovými otázkami ke zkoušce odborné způsobilosti (verze z <span data-manual="verze-pdf">15. 12. 2025</span>).
+        Texty i správné odpovědi jsou převzaté beze změny.</p>
+      <p>Otázky jsou rozdělené do čtyř oblastí zkoušky. Právní předpisy, Nauka a Zdravotnické minimum odpovídají
+        oddílům PDF. Oblast <strong>Bezpečné zacházení</strong> v PDF samostatně není – patří do ní otázky
+        696 a 780–799 vybrané podle obsahu (neoficiální rozdělení).</p>
+
+      <h3>Procvičování oblasti</h3>
+      <ul>
+        <li>V menu ťukněte na oblast. Otázky jdou po jedné v pořadí jako v PDF.</li>
+        <li>Po výběru odpovědi se hned ukáže výsledek: vaše odpověď zeleně (správně) nebo červeně (špatně),
+          správná odpověď je vždy zelená.</li>
+        <li>Tlačítkem „Další otázka“ pokračujete, po poslední otázce oblasti se začne znovu od první.</li>
+        <li>Po návratu do menu a novém otevření oblasti se začíná opět od první otázky.</li>
+      </ul>
+
+      <h3>Kdy otázku „umím“</h3>
+      <ul>
+        <li>Otázku umíte, když na ni odpovíte správně <strong><span data-manual="umim-hranice">2</span>× za sebou</strong>.</li>
+        <li>Jedna špatná odpověď ji vrátí mezi neumím a počítání začíná znovu.</li>
+        <li>Počítají se odpovědi z procvičování i z cvičného testu. Otázky, na které v testu neodpovíte, se nepočítají.</li>
+        <li>Proto po jednom testu „umím“ ještě nepřibude: každá otázka z testu má zatím jen jednu správnou odpověď.
+          Druhá správná odpověď (v dalším testu nebo v procvičování) z ní udělá „umím“.</li>
+        <li>V menu je u každé oblasti „Umím X z N“ a zelený pruh.</li>
+      </ul>
+
+      <h3>Cvičný test</h3>
+      <ul>
+        <li>Test má <span data-manual="test-pocet">30</span> otázek vybraných náhodně ze všech oblastí
+          (<span data-manual="test-rozpis">17 / 5 / 5 / 3</span>) a zamíchaných.</li>
+        <li>Časový limit je <span data-manual="test-limit">40</span> minut. Posledních 5 minut je odpočet červený,
+          po vypršení se test sám vyhodnotí a nezodpovězené otázky se počítají jako špatné.</li>
+        <li>Během testu se správnost neukazuje. Zvolená odpověď je modrá a můžete ji změnit. Mřížka čísel ukazuje,
+          které otázky máte zodpovězené.</li>
+        <li>Pro úspěch je potřeba alespoň <span data-manual="minimum-obecne">26</span> správných odpovědí
+          (obecné zbrojní oprávnění), nebo <span data-manual="minimum-rozsirene">28</span> (rozšířené).</li>
+        <li>Ve vyhodnocení uvidíte výsledek po oblastech a všechny otázky s vaší a správnou odpovědí.</li>
+        <li>V menu je u testu vidět, kolikrát za sebou jste prospěli. Počítá se zvlášť pro obecné a rozšířené
+          oprávnění a přeruší ho první neúspěšný test stejného typu.</li>
+        <li>Časový limit a minima jsou z neoficiálního zdroje (war-zone.cz), v nařízení vlády 238/2025 Sb. tato čísla nejsou.
+          Skutečná zkouška se může lišit.</li>
+      </ul>
+
+      <h3>Kde se ukládá pokrok</h3>
+      <ul>
+        <li>Pokrok (odpovědi a historie testů) se ukládá jen v tomto prohlížeči na tomto zařízení.</li>
+        <li>V jiném prohlížeči, na jiném zařízení nebo na jiné adrese aplikace začínáte od nuly.</li>
+        <li>Smazáním dat prohlížeče (historie, cookies a data webů) se pokrok smaže.</li>
+        <li>Safari na iPhonu může data smazat, když aplikaci 7 dní neotevřete.</li>
+      </ul>
     </section>
 
     <!-- Obrazovka s otázkami vybrané oblasti (na začátku skrytá) -->

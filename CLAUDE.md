@@ -55,6 +55,12 @@ projektu, nikdy globálně. Složka `.venv` je v `.gitignore`.
 - Všechny texty v aplikaci piš česky.
 - Komentáře v kódu piš česky.
 
+## Manuál v aplikaci
+- Obrazovka „Jak aplikace funguje“ (`<section id="manual">` v `index.html`) popisuje chování aplikace.
+- Při každé změně chování, které uživatel uvidí, manuál aktualizovat ve stejném kroku.
+- Čísla z dat a pravidel (limity, minima, počty) do textu nepsat napevno, ale přes `<span data-manual="…">`,
+  které doplní funkce `doplnManual()` v `test.js`.
+
 ## Jak se mnou pracovat
 - Jsem začátečník.
 - Dělej malé změny, jednu věc po druhé.

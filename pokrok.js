@@ -8,7 +8,11 @@
 //     "otazky": {                    – jen otázky, na které už padla odpověď
 //       "649": { "spravne": 3, "spatne": 1, "serie": 2, "posledni": "2026-11-20T17:05:12.000Z" }
 //     },
-//     "testy": []                    – historie cvičných testů (krok b)
+//     "testy": [                     – historie cvičných testů, nejstarší první
+//       { "datum": "2026-11-20T17:30:00.000Z", "typ": "obecne", "spravne": 27, "celkem": 30,
+//         "minimum": 26, "prospel": true, "cas_s": 1900, "cas_vyprsel": false,
+//         "oblasti": { "pravni": { "spravne": 15, "celkem": 17 }, … } }
+//     ]
 //   }
 // "serie" = kolikrát za sebou byla odpověď správná (špatná odpověď ji vynuluje).
 //
@@ -20,6 +24,9 @@ const UMIM_HRANICE = 2;
 
 // Verze struktury ukládaných dat; při změně struktury ji zvýšíme a doplníme převod
 const POKROK_VERZE = 1;
+
+// Kolik posledních testů si pamatujeme (starší se zahodí, aby data nerostla donekonečna)
+const MAX_TESTU = 200;
 
 // V ladicím režimu (?ladeni=1) se pokrok ukládá zvlášť, aby testování nepokazilo skutečný pokrok
 const POKROK_LADENI = new URLSearchParams(location.search).get("ladeni") === "1";
@@ -134,6 +141,28 @@ function zaznamenejOdpoved(cislo, jeSpravne) {
 function umimOtazku(cislo) {
   const zaznam = pokrok.otazky[String(cislo)];
   return Boolean(zaznam) && zaznam.serie >= UMIM_HRANICE;
+}
+
+// Zapíše výsledek cvičného testu do historie a pokrok uloží
+function zaznamenejTest(zaznam) {
+  pokrok.testy.push(zaznam);
+  if (pokrok.testy.length > MAX_TESTU) {
+    pokrok.testy = pokrok.testy.slice(-MAX_TESTU); // necháme jen nejnovější
+  }
+  ulozPokrok();
+}
+
+// Kolikrát za sebou (od nejnovějšího testu dozadu) prospěl test daného typu.
+// Počítání skončí u prvního neúspěšného testu stejného typu.
+function serieProspechu(typ) {
+  let serie = 0;
+  for (let i = pokrok.testy.length - 1; i >= 0; i--) {
+    const t = pokrok.testy[i];
+    if (t.typ !== typ) continue;
+    if (!t.prospel) break;
+    serie++;
+  }
+  return serie;
 }
 
 // Načteme pokrok hned při startu

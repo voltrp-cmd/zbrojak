@@ -254,6 +254,35 @@ h1 {
   margin: 0 0 16px;
 }
 
+/* Tlačítko manuálu v menu */
+.tlacitko-manual {
+  width: 100%;
+  margin-top: 24px;
+}
+
+/* Manuál: čitelné nadpisy a odstavce */
+.manual h3 {
+  margin: 20px 0 8px;
+  font-size: 1.05rem;
+}
+
+.manual p,
+.manual li {
+  margin: 0 0 8px;
+}
+
+.manual ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+/* Řádek se sérií úspěšných testů pod tlačítkem testu */
+.test-serie {
+  margin: 8px 0 0;
+  font-size: 0.95rem;
+  color: #555555;
+}
+
 /* Drobná poznámka o zdroji pravidel */
 .poznamka {
   margin: 16px 0 0;

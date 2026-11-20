@@ -270,10 +270,27 @@ function ukonciTest(casVyprsel) {
     spravne + " z " + test.otazky.length + " správně, potřeba je alespoň " + minimum;
 
   const uplynulo = Math.round((konec - test.start) / 1000);
+
+  // Uložíme test do historie (pokrok.js)
+  zaznamenejTest({
+    datum: new Date(test.start).toISOString(),
+    typ: test.typ,
+    spravne: spravne,
+    celkem: test.otazky.length,
+    minimum: minimum,
+    prospel: prospel,
+    cas_s: uplynulo,
+    cas_vyprsel: casVyprsel,
+    oblasti: poOblastech,
+  });
+  zobrazSeriiTestu();
+
+  const serie = serieProspechu(test.typ);
   document.getElementById("vysledek-info").textContent =
     TYPY_OPRAVNENI[test.typ] +
     " · čas " + Math.floor(uplynulo / 60) + " min " + (uplynulo % 60) + " s" +
-    (casVyprsel ? " · Čas vypršel" : "");
+    (casVyprsel ? " · Čas vypršel" : "") +
+    (serie > 0 ? " · prospěl " + serie + "× za sebou" : "");
 
   // Výsledky po oblastech
   const oblastiEl = document.getElementById("vysledek-oblasti");
@@ -347,6 +364,55 @@ document.getElementById("vysledek-menu").addEventListener("click", function () {
   ukazObrazovku("menu");
 });
 
+// --- Série úspěšných testů v menu -------------------------------------------
+
+// Zobrazí pod tlačítkem testu, kolikrát za sebou prospěl test každého typu
+function zobrazSeriiTestu() {
+  const el = document.getElementById("test-serie");
+  if (pokrok.testy.length === 0) {
+    el.textContent = "Zatím žádný cvičný test.";
+    return;
+  }
+  el.textContent = Object.keys(TYPY_OPRAVNENI)
+    .map(function (typ) {
+      const nazev = typ === "obecne" ? "Obecné ZO" : "Rozšířené ZO";
+      return nazev + ": prospěl " + serieProspechu(typ) + "× za sebou";
+    })
+    .join(" · ");
+}
+
+// --- Čísla v manuálu ----------------------------------------------------------
+
+// Doplní do manuálu (index.html, <span data-manual="…">) čísla z dat a pravidel,
+// aby text odpovídal skutečnému nastavení i po změně pravidel
+function doplnManual(pocetVTestu) {
+  const rozpis = Object.keys(oblasti)
+    .map(function (kod) {
+      return oblasti[kod].otazek_v_testu;
+    })
+    .join(" / ");
+
+  const hodnoty = {
+    "pocet-otazek": vsechnyOtazky.length,
+    "umim-hranice": UMIM_HRANICE,
+    "test-pocet": pocetVTestu,
+    "test-rozpis": rozpis,
+    "test-limit": pravidla.casovy_limit_minut,
+    "minimum-obecne": pravidla.minimum_spravnych.obecne,
+    "minimum-rozsirene": pravidla.minimum_spravnych.rozsirene,
+  };
+  if (verzePdf) {
+    // "2025-12-15" → "15. 12. 2025"
+    const casti = verzePdf.split("-");
+    hodnoty["verze-pdf"] = Number(casti[2]) + ". " + Number(casti[1]) + ". " + casti[0];
+  }
+
+  document.querySelectorAll("[data-manual]").forEach(function (el) {
+    const hodnota = hodnoty[el.dataset.manual];
+    if (hodnota !== undefined) el.textContent = hodnota;
+  });
+}
+
 // --- Načtení pravidel -------------------------------------------------------
 
 async function nactiPravidla() {
@@ -372,6 +438,8 @@ Promise.all([nacitani, nactiPravidla()]).then(function (vysledky) {
     return;
   }
 
+  zobrazSeriiTestu();
+
   const pocet = pocetOtazekTestu();
   testStartPopisEl.textContent =
     pocet + " " + slovoOtazek(pocet) + " · " + pravidla.casovy_limit_minut + " minut";
@@ -382,6 +450,8 @@ Promise.all([nacitani, nactiPravidla()]).then(function (vysledky) {
   document.querySelectorAll("[data-minimum]").forEach(function (el) {
     el.textContent = "Nejméně " + pravidla.minimum_spravnych[el.dataset.minimum] + " správných z " + pocet;
   });
+  doplnManual(pocet);
+
   document.querySelectorAll("[data-poznamka]").forEach(function (el) {
     el.textContent = "Cvičný test je neoficiální. Časový limit a minima – " + pravidla.poznamka + ".";
   });

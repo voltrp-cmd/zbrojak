@@ -8,6 +8,8 @@
 // Všechny otázky ze souboru a popis oblastí (název, počet otázek v testu)
 let vsechnyOtazky = [];
 let oblasti = {};
+// Datum verze PDF, ze které jsou otázky (např. "2025-12-15")
+let verzePdf = null;
 
 // Otázky právě vybrané oblasti – s tímto polem pracuje kvíz (i posuvník v ladicím režimu)
 let otazky = [];
@@ -27,7 +29,7 @@ const dalsiEl = document.getElementById("dalsi");
 let aktualni = 0;
 
 // Všechny obrazovky aplikace – vždy je vidět jen jedna (používá i test.js)
-const OBRAZOVKY = ["menu", "kviz", "test-vyber", "test", "vysledek"];
+const OBRAZOVKY = ["menu", "kviz", "test-vyber", "test", "vysledek", "manual"];
 
 function ukazObrazovku(id) {
   // Při návratu do menu ho překreslíme, aby počty „umím“ odpovídaly novým odpovědím
@@ -184,6 +186,15 @@ zpetEl.addEventListener("click", function () {
   ukazObrazovku("menu");
 });
 
+// Manuál „Jak aplikace funguje“
+document.getElementById("manual-otevrit").addEventListener("click", function () {
+  ukazObrazovku("manual");
+});
+
+document.getElementById("manual-zpet").addEventListener("click", function () {
+  ukazObrazovku("menu");
+});
+
 // Když se otázky nepodaří načíst, ukážeme v menu srozumitelnou chybu
 function zobrazChybu(zprava) {
   menuZpravaEl.textContent = zprava;
@@ -193,7 +204,6 @@ function zobrazChybu(zprava) {
 // Načte otázky ze souboru a zobrazí menu s oblastmi.
 // fetch() stáhne soubor; trvá to chvíli, proto používáme async/await (počkáme na výsledek).
 async function nactiOtazky() {
-  let verzePdf = null;
   try {
     const odpoved = await fetch("data/otazky.json");
     if (!odpoved.ok) {
