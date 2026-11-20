@@ -30,6 +30,10 @@ let aktualni = 0;
 const OBRAZOVKY = ["menu", "kviz", "test-vyber", "test", "vysledek"];
 
 function ukazObrazovku(id) {
+  // Při návratu do menu ho překreslíme, aby počty „umím“ odpovídaly novým odpovědím
+  if (id === "menu" && vsechnyOtazky.length > 0) {
+    zobrazMenu();
+  }
   OBRAZOVKY.forEach(function (jina) {
     document.getElementById(jina).hidden = jina !== id;
   });
@@ -83,6 +87,9 @@ function vyhodnot(zvolena) {
   const spravna = otazky[aktualni].spravna;
   const tlacitka = odpovediEl.querySelectorAll(".odpoved");
 
+  // Uložíme odpověď do pokroku (pokrok.js)
+  zaznamenejOdpoved(otazky[aktualni].cislo, zvolena === spravna);
+
   tlacitka.forEach(function (tlacitko, index) {
     // Po odpovědi už nejde kliknout znovu
     tlacitko.disabled = true;
@@ -124,8 +131,12 @@ function zobrazMenu() {
   oblastiTlacitkaEl.innerHTML = "";
 
   Object.keys(oblasti).forEach(function (kod) {
-    const pocet = vsechnyOtazky.filter(function (o) {
+    const otazkyOblasti = vsechnyOtazky.filter(function (o) {
       return o.oblast === kod;
+    });
+    const pocet = otazkyOblasti.length;
+    const umim = otazkyOblasti.filter(function (o) {
+      return umimOtazku(o.cislo);
     }).length;
 
     const tlacitko = document.createElement("button");
@@ -138,9 +149,17 @@ function zobrazMenu() {
 
     const popis = document.createElement("span");
     popis.className = "tlacitko-oblast-pocet";
-    popis.textContent = pocet + " " + slovoOtazek(pocet);
+    popis.textContent = "Umím " + umim + " z " + pocet + " " + slovoOtazek(pocet);
 
-    tlacitko.append(nazev, popis);
+    // Pruh postupu: vyplněná část odpovídá podílu otázek, které umím
+    const pruh = document.createElement("span");
+    pruh.className = "postup";
+    const vypln = document.createElement("span");
+    vypln.className = "postup-vypln";
+    vypln.style.width = (pocet > 0 ? (umim / pocet) * 100 : 0) + "%";
+    pruh.appendChild(vypln);
+
+    tlacitko.append(nazev, popis, pruh);
     tlacitko.addEventListener("click", function () {
       spustOblast(kod);
     });
@@ -174,6 +193,7 @@ function zobrazChybu(zprava) {
 // Načte otázky ze souboru a zobrazí menu s oblastmi.
 // fetch() stáhne soubor; trvá to chvíli, proto používáme async/await (počkáme na výsledek).
 async function nactiOtazky() {
+  let verzePdf = null;
   try {
     const odpoved = await fetch("data/otazky.json");
     if (!odpoved.ok) {
@@ -183,6 +203,7 @@ async function nactiOtazky() {
     // Soubor obsahuje i údaje o zdroji a oblastech, otázky jsou v položce "otazky"
     vsechnyOtazky = data.otazky || [];
     oblasti = data.oblasti || {};
+    verzePdf = data.verze_pdf || null;
   } catch (chyba) {
     console.error(chyba);
     zobrazChybu("Otázky se nepodařilo načíst. Chybí soubor data/otazky.json, nebo je aplikace otevřená přímo ze souboru místo přes webový server.");
@@ -194,8 +215,16 @@ async function nactiOtazky() {
     return;
   }
 
-  menuZpravaEl.hidden = true;
+  zkontrolujVerziPdf(verzePdf);
   zobrazMenu();
+
+  // Upozornění z pokrok.js (poškozená data, ladicí režim…) ukážeme v menu
+  if (pokrokUpozorneni.length > 0) {
+    menuZpravaEl.textContent = pokrokUpozorneni.join(" ");
+    menuZpravaEl.hidden = false;
+  } else {
+    menuZpravaEl.hidden = true;
+  }
   return true;
 }
 

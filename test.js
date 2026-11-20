@@ -250,6 +250,10 @@ function ukonciTest(casVyprsel) {
   test.otazky.forEach(function (o, index) {
     const jeSpravne = test.odpovedi[index] === o.spravna;
     if (jeSpravne) spravne++;
+    // Do pokroku (pokrok.js) zapíšeme jen zodpovězené otázky – nestihnutá otázka není chyba ve znalostech
+    if (test.odpovedi[index] !== null) {
+      zaznamenejOdpoved(o.cislo, jeSpravne);
+    }
     poOblastech[o.oblast].celkem++;
     if (jeSpravne) poOblastech[o.oblast].spravne++;
   });

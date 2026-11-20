@@ -119,6 +119,8 @@
   </main>
 
   <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
+  <!-- pokrok.js musí být první – app.js i test.js z něj čtou -->
+  <script src="pokrok.js"></script>
   <script src="app.js"></script>
   <script src="test.js"></script>
   <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).
