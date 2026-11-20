@@ -144,6 +144,250 @@ h1 {
   display: none;
 }
 
+/* --- Úvodní obrazovka (menu oblastí) --- */
+.menu-nadpis {
+  font-size: 1.15rem;
+  margin: 0 0 12px;
+}
+
+.menu-zprava {
+  margin: 0 0 12px;
+  color: #666666;
+}
+
+/* Tlačítka oblastí pod sebou s mezerou */
+.oblasti-tlacitka {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Velké tlačítko oblasti: název nahoře, počet otázek pod ním */
+.tlacitko-oblast {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  width: 100%;
+  min-height: 88px;
+  padding: 16px;
+  font-family: inherit;
+  text-align: left;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 2px solid #c5cbd3;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.tlacitko-oblast:active {
+  background: #e8eef7;
+  border-color: #1f5fbf;
+}
+
+.tlacitko-oblast-nazev {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tlacitko-oblast-pocet {
+  font-size: 0.95rem;
+  color: #555555;
+}
+
+/* --- Obrazovka s otázkami --- */
+/* Tlačítko „Zpět do menu“ – méně výrazné než odpovědi, ale dost velké na prst */
+.tlacitko-zpet {
+  min-height: 48px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1f5fbf;
+  background: transparent;
+  border: 2px solid #1f5fbf;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.tlacitko-zpet:active {
+  background: #e8eef7;
+}
+
+/* Název vybrané oblasti nad kartičkou */
+.nazev-oblasti {
+  margin: 0 0 12px;
+  font-weight: 600;
+}
+
+/* --- Cvičný test --- */
+/* Tlačítko testu v menu je oddělené od oblastí a má modrý okraj */
+.tlacitko-test {
+  margin-top: 20px;
+  border-color: #1f5fbf;
+}
+
+.tlacitko-test:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.test-info {
+  margin: 0 0 16px;
+}
+
+/* Drobná poznámka o zdroji pravidel */
+.poznamka {
+  margin: 16px 0 0;
+  font-size: 0.85rem;
+  color: #666666;
+}
+
+/* Horní lišta testu: tlačítko do menu vlevo, odpočet vpravo */
+.test-lista {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.test-lista .tlacitko-zpet {
+  margin-bottom: 0;
+}
+
+.test-cas {
+  font-size: 1.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums; /* číslice stejně široké, aby odpočet neposkakoval */
+}
+
+/* Posledních 5 minut */
+.test-cas.dochazi {
+  color: #c62828;
+}
+
+/* Zvolená odpověď v testu – modře, bez prozrazení správnosti */
+.odpoved.zvolena {
+  background: #dbe7fb;
+  border-color: #1f5fbf;
+}
+
+/* Tlačítka vedle sebe (Předchozí/Další, Nový test/Zpět do menu) */
+.test-navigace {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.test-navigace > button {
+  flex: 1;
+  margin: 0;
+}
+
+/* Mřížka čísel otázek – buňky aspoň 44 px, kolik se jich vejde do řádku */
+.test-mrizka {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 6px;
+  margin: 16px 0 0;
+}
+
+.mrizka-bunka {
+  min-height: 44px;
+  font-size: 1rem;
+  font-family: inherit;
+  color: #1a1a1a;
+  background: #ffffff;
+  border: 2px solid #c5cbd3;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.mrizka-bunka.zodpovezeno {
+  background: #dbe7fb;
+  border-color: #9bb8e8;
+}
+
+.mrizka-bunka.aktualni {
+  border-color: #1f5fbf;
+  font-weight: 700;
+}
+
+/* Vyhodnocení */
+.vysledek-hlavicka {
+  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid #c5cbd3;
+  background: #ffffff;
+}
+
+.vysledek-hlavicka.prospel {
+  background: #d4f5dc;
+  border-color: #1e8e3e;
+}
+
+.vysledek-hlavicka.neprospel {
+  background: #fbd9d9;
+  border-color: #c62828;
+}
+
+.vysledek-titulek {
+  margin: 0 0 4px;
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+.vysledek-skore {
+  margin: 0 0 4px;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.vysledek-hlavicka .test-info {
+  margin: 0;
+}
+
+.vysledek-oblasti {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+.vysledek-oblasti li {
+  margin-bottom: 4px;
+}
+
+/* Zaškrtávátko „Jen chybné“ – dost velké na prst */
+.zaskrtavatko {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  margin: 0 0 8px;
+}
+
+.zaskrtavatko input {
+  width: 22px;
+  height: 22px;
+}
+
+.vysledek-seznam {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* V přehledu jsou odpovědi jen pro čtení, ne tlačítka */
+.vysledek-seznam .odpoved {
+  cursor: default;
+}
+
+/* Režim „Jen chybné“ skryje správně zodpovězené otázky */
+.vysledek-seznam.jen-chybne .je-spravne {
+  display: none;
+}
+
 /* DOČASNÉ: panel pro kontrolu otázek z posuvnik.js (po kontrole smazat celý blok) */
 .kontrola {
   margin-bottom: 16px;

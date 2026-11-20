@@ -31,6 +31,32 @@ def je_prazdny(text):
     return not isinstance(text, str) or not text.strip()
 
 
+def zkontroluj_pravidla(otazek_v_testu):
+    """Ověří data/pravidla.json: kladný časový limit a minima v rozsahu 1 až počet otázek v testu."""
+    soubor = PROJEKT / "data" / "pravidla.json"
+    try:
+        test = json.loads(soubor.read_text(encoding="utf-8"))["cvicny_test"]
+    except (OSError, ValueError, KeyError) as e:
+        return [f"pravidla.json: nejde načíst část cvicny_test ({e})"]
+
+    chyby = []
+    limit = test.get("casovy_limit_minut")
+    if not isinstance(limit, (int, float)) or isinstance(limit, bool) or limit <= 0:
+        chyby.append(f"pravidla.json: časový limit {limit!r} musí být kladné číslo")
+
+    minima = test.get("minimum_spravnych")
+    if not isinstance(minima, dict) or not minima:
+        chyby.append("pravidla.json: chybí minimum_spravnych")
+        minima = {}
+    for typ, minimum in minima.items():
+        if not isinstance(minimum, int) or isinstance(minimum, bool) or not 1 <= minimum <= otazek_v_testu:
+            chyby.append(f"pravidla.json: minimum pro {typ} je {minimum!r}, má být 1 až {otazek_v_testu}")
+
+    print(f"\nCvičný test (data/pravidla.json): {otazek_v_testu} otázek, limit {limit} min, "
+          + ", ".join(f"{typ} min. {m}" for typ, m in minima.items()))
+    return chyby
+
+
 def main():
     data = json.loads(SOUBOR.read_text(encoding="utf-8"))
     oddily = data.get("oddily", {})
@@ -99,6 +125,9 @@ def main():
     for kod, oblast in oblasti.items():
         print(f"  {oblast['nazev']}: {pocty_oblasti.get(kod, 0)} otázek, v testu {oblast['otazek_v_testu']}")
     print(f"  Celkem v testu: {sum(o['otazek_v_testu'] for o in oblasti.values())}")
+
+    # 8) Pravidla cvičného testu (data/pravidla.json)
+    chyby.extend(zkontroluj_pravidla(sum(o["otazek_v_testu"] for o in oblasti.values())))
 
     if chyby:
         print(f"\nNALEZENO CHYB: {len(chyby)}")

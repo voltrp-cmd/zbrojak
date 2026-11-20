@@ -1,0 +1,11 @@
+{
+  "cvicny_test": {
+    "pocty_otazek": "podle data/otazky.json → oblasti → otazek_v_testu",
+    "casovy_limit_minut": 40,
+    "minimum_spravnych": {
+      "obecne": 26,
+      "rozsirene": 28
+    },
+    "poznamka": "zdroj: war-zone.cz (neoficiální), v nařízení vlády 238/2025 Sb. čísla nejsou"
+  }
+}

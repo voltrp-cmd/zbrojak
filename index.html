@@ -13,24 +13,114 @@
   <main>
     <h1>Nauka pro zbrojní průkaz</h1>
 
-    <!-- Kartička s jednou otázkou -->
-    <section class="karta">
-      <p id="pocitadlo" class="pocitadlo"></p>
-      <!-- Obrázek k otázce (jen u některých otázek, jinak je skrytý).
-           Je nad textem otázky, stejně jako v PDF („výše vyobrazený…“). -->
-      <img id="obrazek" class="obrazek" alt="" hidden>
-      <h2 id="otazka" class="otazka"></h2>
+    <!-- Úvodní obrazovka: výběr oblasti zkoušky -->
+    <section id="menu" class="menu">
+      <h2 class="menu-nadpis">Vyber oblast</h2>
+      <!-- Zpráva při načítání nebo chybě -->
+      <p id="menu-zprava" class="menu-zprava">Načítám otázky…</p>
+      <!-- Sem app.js vloží tlačítka oblastí -->
+      <div id="oblasti-tlacitka" class="oblasti-tlacitka"></div>
 
-      <!-- Sem app.js vloží tlačítka s odpověďmi -->
-      <div id="odpovedi" class="odpovedi"></div>
+      <!-- Cvičný test (popisek s počtem otázek a minutami doplní test.js) -->
+      <button id="test-start" class="tlacitko-oblast tlacitko-test" type="button">
+        <span class="tlacitko-oblast-nazev">Cvičný test</span>
+        <span id="test-start-popis" class="tlacitko-oblast-pocet">Načítám pravidla…</span>
+      </button>
+    </section>
 
-      <!-- Tlačítko je na začátku skryté (atribut hidden) -->
-      <button id="dalsi" class="tlacitko-dalsi" hidden>Další otázka</button>
+    <!-- Obrazovka s otázkami vybrané oblasti (na začátku skrytá) -->
+    <section id="kviz" hidden>
+      <button id="zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <p id="nazev-oblasti" class="nazev-oblasti"></p>
+
+      <!-- Kartička s jednou otázkou -->
+      <section class="karta">
+        <p id="pocitadlo" class="pocitadlo"></p>
+        <!-- Obrázek k otázce (jen u některých otázek, jinak je skrytý).
+             Je nad textem otázky, stejně jako v PDF („výše vyobrazený…“). -->
+        <img id="obrazek" class="obrazek" alt="" hidden>
+        <h2 id="otazka" class="otazka"></h2>
+
+        <!-- Sem app.js vloží tlačítka s odpověďmi -->
+        <div id="odpovedi" class="odpovedi"></div>
+
+        <!-- Tlačítko je na začátku skryté (atribut hidden) -->
+        <button id="dalsi" class="tlacitko-dalsi" hidden>Další otázka</button>
+      </section>
+    </section>
+
+    <!-- Cvičný test, krok 1: výběr typu zbrojního oprávnění -->
+    <section id="test-vyber" hidden>
+      <button id="test-vyber-zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <h2 class="menu-nadpis">Cvičný test</h2>
+      <p id="test-vyber-info" class="test-info"></p>
+      <div class="oblasti-tlacitka">
+        <button class="tlacitko-oblast" type="button" data-typ="obecne">
+          <span class="tlacitko-oblast-nazev">Obecné zbrojní oprávnění</span>
+          <span class="tlacitko-oblast-pocet" data-minimum="obecne"></span>
+        </button>
+        <button class="tlacitko-oblast" type="button" data-typ="rozsirene">
+          <span class="tlacitko-oblast-nazev">Rozšířené zbrojní oprávnění</span>
+          <span class="tlacitko-oblast-pocet" data-minimum="rozsirene"></span>
+        </button>
+      </div>
+      <p class="poznamka" data-poznamka></p>
+    </section>
+
+    <!-- Cvičný test, krok 2: průběh testu -->
+    <section id="test" hidden>
+      <div class="test-lista">
+        <button id="test-zpet" class="tlacitko-zpet" type="button">← Menu</button>
+        <span id="test-cas" class="test-cas">40:00</span>
+      </div>
+
+      <section class="karta">
+        <p id="test-pocitadlo" class="pocitadlo"></p>
+        <img id="test-obrazek" class="obrazek" alt="" hidden>
+        <h2 id="test-otazka" class="otazka"></h2>
+        <div id="test-odpovedi" class="odpovedi"></div>
+
+        <div class="test-navigace">
+          <button id="test-predchozi" class="tlacitko-zpet" type="button">◀ Předchozí</button>
+          <button id="test-dalsi" class="tlacitko-zpet" type="button">Další ▶</button>
+        </div>
+      </section>
+
+      <!-- Mřížka čísel otázek: vybarvené = zodpovězené, ťuknutím se přejde na otázku -->
+      <div id="test-mrizka" class="test-mrizka"></div>
+
+      <button id="test-ukoncit" class="tlacitko-dalsi" type="button">Ukončit a vyhodnotit</button>
+    </section>
+
+    <!-- Cvičný test, krok 3: vyhodnocení -->
+    <section id="vysledek" hidden>
+      <div id="vysledek-hlavicka" class="vysledek-hlavicka">
+        <p id="vysledek-titulek" class="vysledek-titulek"></p>
+        <p id="vysledek-skore" class="vysledek-skore"></p>
+        <p id="vysledek-info" class="test-info"></p>
+      </div>
+
+      <h2 class="menu-nadpis">Podle oblastí</h2>
+      <ul id="vysledek-oblasti" class="vysledek-oblasti"></ul>
+
+      <div class="test-navigace">
+        <button id="vysledek-novy" class="tlacitko-dalsi" type="button">Nový test</button>
+        <button id="vysledek-menu" class="tlacitko-zpet" type="button">Zpět do menu</button>
+      </div>
+
+      <h2 class="menu-nadpis">Přehled otázek</h2>
+      <label class="zaskrtavatko">
+        <input type="checkbox" id="vysledek-jen-chybne"> Jen chybné
+      </label>
+      <div id="vysledek-seznam" class="vysledek-seznam"></div>
+
+      <p class="poznamka" data-poznamka></p>
     </section>
   </main>
 
   <!-- Skript načítáme až na konci, aby už existovaly všechny prvky stránky -->
   <script src="app.js"></script>
+  <script src="test.js"></script>
   <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).
        DOČASNÉ: posuvník pro kontrolu otázek (po kontrole smazat i soubor posuvnik.js). -->
   <script>
