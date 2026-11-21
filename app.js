@@ -40,7 +40,7 @@ let aktualniOblast = null;
 
 // Všechny obrazovky aplikace – vždy je vidět jen jedna (používá i test.js)
 const OBRAZOVKY = [
-  "menu", "oblast-volba", "kviz", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok",
+  "menu", "oblast-volba", "kviz", "kolo-konec", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok",
 ];
 
 function ukazObrazovku(id) {
@@ -253,6 +253,19 @@ function otazkyVOblasti(kod) {
   });
 }
 
+// Otázky kola podle uloženého pořadí; čísla, která v oblasti už nejsou, vynechá
+function otazkyKolaZPozice(kod, pozice) {
+  const podleCisla = {};
+  otazkyVOblasti(kod).forEach(function (o) {
+    podleCisla[o.cislo] = o;
+  });
+  return pozice.poradi
+    .map(function (cislo) {
+      return podleCisla[cislo];
+    })
+    .filter(Boolean);
+}
+
 // Vrátí platnou rozpracovanou pozici oblasti i s otázkami kola, nebo null.
 // Čísla otázek, které už neexistují (např. jiná verze PDF), se vynechají.
 // Když z kola nic nezbude nebo je kolo dokončené, pozice se smaže.
@@ -260,16 +273,7 @@ function platnaPozice(kod) {
   const pozice = nactiPozici(kod);
   if (!pozice || !Array.isArray(pozice.poradi)) return null;
 
-  const podleCisla = {};
-  otazkyVOblasti(kod).forEach(function (o) {
-    podleCisla[o.cislo] = o;
-  });
-  const otazkyKola = pozice.poradi
-    .map(function (cislo) {
-      return podleCisla[cislo];
-    })
-    .filter(Boolean);
-
+  const otazkyKola = otazkyKolaZPozice(kod, pozice);
   if (otazkyKola.length === 0 || pozice.index >= otazkyKola.length) {
     smazPozici(kod);
     return null;
@@ -288,6 +292,15 @@ function aktualizujPopisyVolby(neumim) {
 // Obrazovka po kliknutí na oblast: Pokračovat / [Náhodné pořadí] / Od začátku / Jen co ještě neumím
 function zobrazVolbuOblasti(kod) {
   aktualniOblast = kod;
+
+  // Kolo dokončené, ale souhrn se ještě neukázal (po poslední odpovědi jste odešli do menu)
+  const ulozena = nactiPozici(kod);
+  if (ulozena && Array.isArray(ulozena.poradi) && ulozena.zodpovezeno > 0 &&
+      ulozena.index >= otazkyKolaZPozice(kod, ulozena).length) {
+    dokonciKoloOblasti();
+    return;
+  }
+
   const vsechny = otazkyVOblasti(kod);
   const umim = vsechny.filter(function (o) {
     return umimOtazku(o.cislo);
@@ -371,12 +384,36 @@ function noveKoloOblasti(rezimKola) {
   spustKoloOblasti(otazkyKola, 0);
 }
 
-// Po poslední otázce kola: pozici smažeme a vrátíme se na volbu režimu
-// (souhrn kola přibude v dalším kroku)
+// Po poslední otázce kola: ukážeme souhrn kola a pozici smažeme
 function dokonciKoloOblasti() {
-  smazPozici(aktualniOblast);
-  zobrazVolbuOblasti(aktualniOblast);
+  const kod = aktualniOblast;
+  const pozice = nactiPozici(kod);
+  const zodpovezeno = pozice ? pozice.zodpovezeno : 0;
+  const spravne = pozice ? pozice.spravne : 0;
+  const procent = zodpovezeno > 0 ? Math.round((spravne / zodpovezeno) * 100) : 0;
+
+  const vsechny = otazkyVOblasti(kod);
+  const umim = vsechny.filter(function (o) {
+    return umimOtazku(o.cislo);
+  }).length;
+
+  document.getElementById("kolo-konec-nazev").textContent =
+    oblasti[kod].nazev + (pozice ? " · " + popisKola(pozice) : "");
+  document.getElementById("kolo-konec-vysledek").textContent =
+    "Zodpovězeno " + zodpovezeno + ", správně " + spravne + " (" + procent + " %)";
+  document.getElementById("kolo-konec-umim").textContent =
+    "Umím teď " + umim + " z " + vsechny.length + " " + slovoOtazek(vsechny.length);
+
+  smazPozici(kod);
+  ukazObrazovku("kolo-konec");
 }
+
+document.getElementById("kolo-konec-volba").addEventListener("click", function () {
+  zobrazVolbuOblasti(aktualniOblast);
+});
+document.getElementById("kolo-konec-menu").addEventListener("click", function () {
+  ukazObrazovku("menu");
+});
 
 document.getElementById("volba-pokracovat").addEventListener("click", function () {
   const rozpracovano = platnaPozice(aktualniOblast);
