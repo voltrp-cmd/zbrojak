@@ -32,11 +32,16 @@ const chybyDalsiKoloEl = document.getElementById("chyby-dalsi-kolo");
 // Pořadí právě zobrazené otázky
 let aktualni = 0;
 
-// Co se právě procvičuje: "oblast" (jedna oblast dokola), nebo "chyby" (kolo opakování chyb)
+// Co se právě procvičuje: "oblast" (kolo v jedné oblasti), nebo "chyby" (kolo opakování chyb)
 let rezim = "oblast";
 
+// Kód oblasti, ve které běží kolo (např. "nauka"); pozice kola se ukládá přes pokrok.js
+let aktualniOblast = null;
+
 // Všechny obrazovky aplikace – vždy je vidět jen jedna (používá i test.js)
-const OBRAZOVKY = ["menu", "kviz", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok"];
+const OBRAZOVKY = [
+  "menu", "oblast-volba", "kviz", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok",
+];
 
 function ukazObrazovku(id) {
   // Při návratu do menu ho překreslíme, aby počty „umím“ odpovídaly novým odpovědím
@@ -100,6 +105,15 @@ function zobrazOtazku() {
     odpovediEl.appendChild(tlacitko);
   });
 
+  // V kole oblasti si zapamatujeme, kterou otázku právě vidíte (i při listování posuvníkem)
+  if (rezim === "oblast") {
+    const pozice = nactiPozici(aktualniOblast);
+    if (pozice && pozice.index !== aktualni) {
+      pozice.index = aktualni;
+      ulozPozici(aktualniOblast, pozice);
+    }
+  }
+
   // DOČASNÉ: kontrolní panel z posuvnik.js (při odstranění panelu smazat i tento řádek)
   if (typeof kontrolaPoZobrazeni === "function") kontrolaPoZobrazeni();
 }
@@ -111,6 +125,19 @@ function vyhodnot(zvolena) {
 
   // Uložíme odpověď do pokroku (pokrok.js)
   zaznamenejOdpoved(otazky[aktualni].cislo, zvolena === spravna);
+
+  // V kole oblasti posuneme uloženou pozici na další otázku a připočteme výsledek kola.
+  // Když teď odejdete, pokračuje se až další otázkou – stejnou otázku nezodpovíte dvakrát.
+  if (rezim === "oblast") {
+    const pozice = nactiPozici(aktualniOblast);
+    if (pozice) {
+      pozice.index = aktualni + 1;
+      pozice.zodpovezeno++;
+      if (zvolena === spravna) pozice.spravne++;
+      pozice.datum = new Date().toISOString();
+      ulozPozici(aktualniOblast, pozice);
+    }
+  }
 
   tlacitka.forEach(function (tlacitko, index) {
     // Po odpovědi už nejde kliknout znovu
@@ -129,17 +156,18 @@ function vyhodnot(zvolena) {
   dalsiEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-// Přechod na další otázku. Po poslední otázce:
-//   - v procvičování oblasti začneme znovu od první,
+// Přechod na další otázku. Po poslední otázce kola:
+//   - v kole oblasti se kolo dokončí (dokonciKoloOblasti),
 //   - v opakování chyb ukážeme obrazovku „Kolo hotovo“.
 dalsiEl.addEventListener("click", function () {
   aktualni = aktualni + 1;
   if (aktualni >= otazky.length) {
     if (rezim === "chyby") {
       zobrazKonecKola();
-      return;
+    } else {
+      dokonciKoloOblasti();
     }
-    aktualni = 0;
+    return;
   }
   zobrazOtazku();
 
@@ -189,7 +217,7 @@ function zobrazMenu() {
 
     tlacitko.append(nazev, popis, pruh);
     tlacitko.addEventListener("click", function () {
-      spustOblast(kod);
+      zobrazVolbuOblasti(kod);
     });
     oblastiTlacitkaEl.appendChild(tlacitko);
   });
@@ -203,18 +231,172 @@ function zobrazMenu() {
       : pocetChyb + " " + slovoOtazek(pocetChyb) + " s poslední odpovědí špatně";
 }
 
-// Po kliknutí na oblast: vybereme její otázky a ukážeme první z nich
-function spustOblast(kod) {
-  rezim = "oblast";
-  otazky = vsechnyOtazky.filter(function (o) {
+// --- Procvičování oblasti: volba režimu a pokračování ------------------------------
+
+// Popis kola pro uživatele podle uložené pozice:
+//   rezim "vse" (všechny otázky) nebo "neumim" (jen co ještě neumím),
+//   nahodne true/false (náhodné pořadí, nebo pořadí jako v PDF).
+function popisKola(pozice) {
+  const coProcvicuji = pozice.rezim === "neumim" ? "jen co ještě neumím" : "všechny otázky";
+  // rezim "nahodne" uložila předchozí verze tohoto kroku (jen v ladicích datech)
+  const nahodne = pozice.nahodne || pozice.rezim === "nahodne";
+  return coProcvicuji + " · " + (nahodne ? "náhodně" : "podle PDF");
+}
+
+// Zaškrtávátko „Náhodné pořadí“ – platí pro nové kolo
+const volbaNahodneEl = document.getElementById("volba-nahodne");
+
+// Otázky oblasti v pořadí jako v PDF
+function otazkyVOblasti(kod) {
+  return vsechnyOtazky.filter(function (o) {
     return o.oblast === kod;
   });
-  aktualni = 0;
-  nazevOblastiEl.textContent = oblasti[kod].nazev;
+}
+
+// Vrátí platnou rozpracovanou pozici oblasti i s otázkami kola, nebo null.
+// Čísla otázek, které už neexistují (např. jiná verze PDF), se vynechají.
+// Když z kola nic nezbude nebo je kolo dokončené, pozice se smaže.
+function platnaPozice(kod) {
+  const pozice = nactiPozici(kod);
+  if (!pozice || !Array.isArray(pozice.poradi)) return null;
+
+  const podleCisla = {};
+  otazkyVOblasti(kod).forEach(function (o) {
+    podleCisla[o.cislo] = o;
+  });
+  const otazkyKola = pozice.poradi
+    .map(function (cislo) {
+      return podleCisla[cislo];
+    })
+    .filter(Boolean);
+
+  if (otazkyKola.length === 0 || pozice.index >= otazkyKola.length) {
+    smazPozici(kod);
+    return null;
+  }
+  return { pozice: pozice, otazky: otazkyKola };
+}
+
+// Popisky tlačítek „Od začátku“ a „Jen co ještě neumím“ podle zaškrtávátka „Náhodné pořadí“
+function aktualizujPopisyVolby(neumim) {
+  const poradi = volbaNahodneEl.checked ? "v náhodném pořadí" : "v pořadí jako v PDF";
+  document.getElementById("volba-zacatek-popis").textContent = "Všechny otázky " + poradi;
+  document.getElementById("volba-neumim-popis").textContent =
+    neumim === 0 ? "Všechno v oblasti umíte" : neumim + " " + slovoOtazek(neumim) + " " + poradi;
+}
+
+// Obrazovka po kliknutí na oblast: Pokračovat / [Náhodné pořadí] / Od začátku / Jen co ještě neumím
+function zobrazVolbuOblasti(kod) {
+  aktualniOblast = kod;
+  const vsechny = otazkyVOblasti(kod);
+  const umim = vsechny.filter(function (o) {
+    return umimOtazku(o.cislo);
+  }).length;
+  const neumim = vsechny.length - umim;
+
+  document.getElementById("volba-nazev").textContent = oblasti[kod].nazev;
+  document.getElementById("volba-info").textContent =
+    "Umím " + umim + " z " + vsechny.length + " " + slovoOtazek(vsechny.length);
+
+  // Pokračovat – jen když je kolo rozpracované
+  const rozpracovano = platnaPozice(kod);
+  const pokracovatEl = document.getElementById("volba-pokracovat");
+  pokracovatEl.hidden = !rozpracovano;
+  if (rozpracovano) {
+    const p = rozpracovano.pozice;
+    document.getElementById("volba-pokracovat-nazev").textContent =
+      "Pokračovat od otázky " + (p.index + 1) + " z " + rozpracovano.otazky.length;
+    document.getElementById("volba-pokracovat-popis").textContent =
+      popisKola(p) + " · naposledy " +
+      new Date(p.datum).toLocaleString("cs-CZ", {
+        day: "numeric", month: "numeric", hour: "2-digit", minute: "2-digit",
+      });
+  }
+
+  // Jen co ještě neumím – neaktivní, když umím všechno
+  const neumimEl = document.getElementById("volba-neumim");
+  neumimEl.disabled = neumim === 0;
+  neumimEl.dataset.pocet = neumim; // pro překreslení popisku po změně zaškrtávátka
+  aktualizujPopisyVolby(neumim);
+
+  ukazObrazovku("oblast-volba");
+}
+
+// Spustí kolo podle uložené pozice (nové i pokračující)
+function spustKoloOblasti(otazkyKola, index) {
+  rezim = "oblast";
+  otazky = otazkyKola;
+  aktualni = index;
+  const pozice = nactiPozici(aktualniOblast);
+  nazevOblastiEl.textContent = oblasti[aktualniOblast].nazev + " · " + popisKola(pozice);
 
   ukazObrazovku("kviz");
   zobrazOtazku();
 }
+
+// Nové kolo: rezimKola "vse" nebo "neumim"; pořadí podle zaškrtávátka „Náhodné pořadí“
+function noveKoloOblasti(rezimKola) {
+  const nahodne = volbaNahodneEl.checked;
+  const rozpracovano = platnaPozice(aktualniOblast);
+  if (rozpracovano) {
+    const otazka =
+      "Začít nové kolo? Rozpracované pokračování od otázky " + (rozpracovano.pozice.index + 1) +
+      " z " + rozpracovano.otazky.length + " se zahodí.";
+    if (!confirm(otazka)) return;
+  }
+
+  let otazkyKola = otazkyVOblasti(aktualniOblast); // pořadí jako v PDF
+  if (rezimKola === "neumim") {
+    otazkyKola = otazkyKola.filter(function (o) {
+      return !umimOtazku(o.cislo);
+    });
+  }
+  if (nahodne) {
+    otazkyKola = zamichej(otazkyKola);
+  }
+  if (otazkyKola.length === 0) return;
+
+  // Pořadí si uložíme, aby šlo pokračovat (i po náhodném zamíchání)
+  ulozPozici(aktualniOblast, {
+    rezim: rezimKola,
+    nahodne: nahodne,
+    poradi: otazkyKola.map(function (o) {
+      return o.cislo;
+    }),
+    index: 0,
+    zodpovezeno: 0,
+    spravne: 0,
+    datum: new Date().toISOString(),
+  });
+  spustKoloOblasti(otazkyKola, 0);
+}
+
+// Po poslední otázce kola: pozici smažeme a vrátíme se na volbu režimu
+// (souhrn kola přibude v dalším kroku)
+function dokonciKoloOblasti() {
+  smazPozici(aktualniOblast);
+  zobrazVolbuOblasti(aktualniOblast);
+}
+
+document.getElementById("volba-pokracovat").addEventListener("click", function () {
+  const rozpracovano = platnaPozice(aktualniOblast);
+  if (rozpracovano) {
+    spustKoloOblasti(rozpracovano.otazky, rozpracovano.pozice.index);
+  }
+});
+document.getElementById("volba-zacatek").addEventListener("click", function () {
+  noveKoloOblasti("vse");
+});
+// Po zaškrtnutí/odškrtnutí „Náhodné pořadí“ přepíšeme popisky tlačítek
+volbaNahodneEl.addEventListener("change", function () {
+  aktualizujPopisyVolby(Number(document.getElementById("volba-neumim").dataset.pocet));
+});
+document.getElementById("volba-neumim").addEventListener("click", function () {
+  noveKoloOblasti("neumim");
+});
+document.getElementById("volba-zpet").addEventListener("click", function () {
+  ukazObrazovku("menu");
+});
 
 // --- Opakování chyb ------------------------------------------------------------
 

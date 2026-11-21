@@ -161,6 +161,32 @@
       </ul>
     </section>
 
+    <!-- Volba režimu po kliknutí na oblast (texty a počty doplní app.js) -->
+    <section id="oblast-volba" hidden>
+      <button id="volba-zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <h2 id="volba-nazev" class="menu-nadpis"></h2>
+      <p id="volba-info" class="test-info"></p>
+      <div class="oblasti-tlacitka">
+        <!-- Jen když je kolo rozpracované -->
+        <button id="volba-pokracovat" class="tlacitko-oblast tlacitko-pokracovat" type="button" hidden>
+          <span id="volba-pokracovat-nazev" class="tlacitko-oblast-nazev"></span>
+          <span id="volba-pokracovat-popis" class="tlacitko-oblast-pocet"></span>
+        </button>
+        <!-- Platí pro nové kolo (Od začátku, Jen co ještě neumím), ne pro Pokračovat -->
+        <label class="zaskrtavatko">
+          <input type="checkbox" id="volba-nahodne"> Náhodné pořadí
+        </label>
+        <button id="volba-zacatek" class="tlacitko-oblast" type="button">
+          <span class="tlacitko-oblast-nazev">Od začátku</span>
+          <span id="volba-zacatek-popis" class="tlacitko-oblast-pocet"></span>
+        </button>
+        <button id="volba-neumim" class="tlacitko-oblast" type="button">
+          <span class="tlacitko-oblast-nazev">Jen co ještě neumím</span>
+          <span id="volba-neumim-popis" class="tlacitko-oblast-pocet"></span>
+        </button>
+      </div>
+    </section>
+
     <!-- Obrazovka s otázkami vybrané oblasti (na začátku skrytá) -->
     <section id="kviz" hidden>
       <button id="zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>

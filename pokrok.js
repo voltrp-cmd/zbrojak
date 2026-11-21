@@ -14,9 +14,9 @@
 //         "oblasti": { "pravni": { "spravne": 15, "celkem": 17 }, … } }
 //     ],
 //     "pozice": {                    – rozpracované procvičování v oblastech (od verze 2)
-//       "nauka": { "rezim": "nahodne", "poradi": [712, 655, …], "index": 37,
+//       "nauka": { "rezim": "vse", "nahodne": true, "poradi": [712, 655, …], "index": 37,
 //                  "zodpovezeno": 37, "spravne": 29, "datum": "2026-11-20T18:30:00.000Z" }
-//     }
+//     }                              – rezim: "vse" | "neumim"; nahodne: náhodné pořadí ano/ne
 //   }
 // "serie" = kolikrát za sebou byla odpověď správná (špatná odpověď ji vynuluje).
 //

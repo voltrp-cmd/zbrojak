@@ -213,6 +213,22 @@ h1 {
   background: #1e8e3e;
 }
 
+/* „Pokračovat“ na volbě režimu – zvýrazněné modrým okrajem a podbarvením */
+.tlacitko-pokracovat {
+  border-color: #1f5fbf;
+  background: #eef3fc;
+}
+
+/* Tlačítka s atributem hidden opravdu skrýt (.tlacitko-oblast má display: flex) */
+.tlacitko-oblast[hidden] {
+  display: none;
+}
+
+.tlacitko-oblast:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
 /* Tlačítko „Opakovat chyby“ – oddělené od oblastí, s červeným okrajem */
 .tlacitko-chyby {
   margin-top: 20px;
