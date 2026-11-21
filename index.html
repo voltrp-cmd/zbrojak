@@ -87,11 +87,22 @@
 
       <h3>Procvičování oblasti</h3>
       <ul>
-        <li>V menu ťukněte na oblast. Otázky jdou po jedné v pořadí jako v PDF.</li>
+        <li>V menu ťukněte na oblast a vyberte, jak procvičovat:
+          <ul>
+            <li><strong>Od začátku</strong> – všechny otázky oblasti.</li>
+            <li><strong>Jen co ještě neumím</strong> – jen otázky, které ještě nejsou „umím“. Seznam se určí
+              na začátku kola, otázka zvládnutá během kola tedy nezmizí uprostřed.</li>
+            <li>Zaškrtnutím <strong>Náhodné pořadí</strong> se otázky zamíchají, jinak jdou v pořadí jako v PDF.</li>
+          </ul>
+        </li>
         <li>Po výběru odpovědi se hned ukáže výsledek: vaše odpověď zeleně (správně) nebo červeně (špatně),
-          správná odpověď je vždy zelená.</li>
-        <li>Tlačítkem „Další otázka“ pokračujete, po poslední otázce oblasti se začne znovu od první.</li>
-        <li>Po návratu do menu a novém otevření oblasti se začíná opět od první otázky.</li>
+          správná odpověď je vždy zelená. Tlačítkem „Další otázka“ pokračujete.</li>
+        <li>Rozpracované kolo si aplikace pamatuje i po zavření. Při dalším otevření oblasti nabídne
+          <strong>Pokračovat od otázky X</strong> – i u náhodného pořadí pokračuje ve stejném zamíchaném pořadí.
+          Když odejdete hned po odpovědi, pokračuje se až další otázkou.</li>
+        <li>Když je kolo rozpracované a zvolíte nové, aplikace se zeptá, jestli rozpracované kolo zahodit.</li>
+        <li>Po poslední otázce kola uvidíte souhrn: kolik otázek jste zodpověděli, kolik správně a kolik
+          otázek v oblasti teď umíte.</li>
       </ul>
 
       <h3>Kdy otázku „umím“</h3>
@@ -154,10 +165,13 @@
       <ul>
         <li>V menu pod tlačítkem „Můj pokrok“ najdete souhrn (kolik otázek umíte a kolik jste zkoušeli)
           a historii cvičných testů od nejnovějšího. Ťuknutím na test se rozbalí výsledek po oblastech a čas.</li>
-        <li>„Stáhnout zálohu“ uloží pokrok do souboru JSON (např. zbrojak-pokrok-2026-11-20.json).</li>
+        <li>„Stáhnout zálohu“ uloží pokrok do souboru JSON (např. zbrojak-pokrok-2026-11-20.json) – odpovědi,
+          historii testů i rozpracovaná kola v oblastech.</li>
+        <li>Zálohu ze starší verze aplikace lze nahrát, aplikace ji sama převede.</li>
         <li>„Nahrát zálohu“ načte pokrok ze souboru. Současný pokrok se tím <strong>nahradí</strong>, ne sloučí –
           před nahráním se aplikace zeptá a ukáže, co se čím nahradí.</li>
-        <li>„Smazat veškerý pokrok“ smaže odpovědi i historii testů. Aplikace se zeptá dvakrát, smazání nejde vrátit.</li>
+        <li>„Smazat veškerý pokrok“ smaže odpovědi, historii testů i rozpracovaná kola. Aplikace se zeptá dvakrát,
+          smazání nejde vrátit.</li>
       </ul>
     </section>
 
