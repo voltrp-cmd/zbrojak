@@ -3,7 +3,7 @@
 // Ukládá se jedna položka (JSON) s touto strukturou:
 //   {
 //     "aplikace": "zbrojak",
-//     "verze": 1,                    – verze struktury dat (POKROK_VERZE)
+//     "verze": 2,                    – verze struktury dat (POKROK_VERZE)
 //     "verze_pdf": "2025-12-15",     – z jaké verze PDF jsou čísla otázek
 //     "otazky": {                    – jen otázky, na které už padla odpověď
 //       "649": { "spravne": 3, "spatne": 1, "serie": 2, "posledni": "2026-11-20T17:05:12.000Z" }
@@ -12,9 +12,17 @@
 //       { "datum": "2026-11-20T17:30:00.000Z", "typ": "obecne", "spravne": 27, "celkem": 30,
 //         "minimum": 26, "prospel": true, "cas_s": 1900, "cas_vyprsel": false,
 //         "oblasti": { "pravni": { "spravne": 15, "celkem": 17 }, … } }
-//     ]
+//     ],
+//     "pozice": {                    – rozpracované procvičování v oblastech (od verze 2)
+//       "nauka": { "rezim": "nahodne", "poradi": [712, 655, …], "index": 37,
+//                  "zodpovezeno": 37, "spravne": 29, "datum": "2026-11-20T18:30:00.000Z" }
+//     }
 //   }
 // "serie" = kolikrát za sebou byla odpověď správná (špatná odpověď ji vynuluje).
+//
+// Historie verzí struktury:
+//   1 – otazky, testy
+//   2 – přibyla "pozice" (převod z verze 1 doplní prázdné "pozice": {})
 //
 // Tento soubor nic nezobrazuje, jen data čte, mění a ukládá.
 // Musí se načíst před app.js.
@@ -22,8 +30,16 @@
 // Otázka se počítá jako „umím“, když na ni byla odpověď správně tolikrát za sebou
 const UMIM_HRANICE = 2;
 
-// Verze struktury ukládaných dat; při změně struktury ji zvýšíme a doplníme převod
-const POKROK_VERZE = 1;
+// Verze struktury ukládaných dat; při změně struktury ji zvýšíme a doplníme převod do PREVODY
+const POKROK_VERZE = 2;
+
+// Převody starších dat: PREVODY[n] převede data z verze n na verzi n + 1.
+// Data se převádějí postupně (1 → 2 → 3 …), takže stačí vždy přidat jeden nový převod.
+const PREVODY = {
+  1: function (data) {
+    data.pozice = {};
+  },
+};
 
 // Kolik posledních testů si pamatujeme (starší se zahodí, aby data nerostla donekonečna)
 const MAX_TESTU = 200;
@@ -45,7 +61,22 @@ function prazdnyPokrok() {
     verze_pdf: null,
     otazky: {},
     testy: [],
+    pozice: {},
   };
+}
+
+// Převede data starší verze na aktuální (POKROK_VERZE). Data novější verze nemění.
+// Mění předaný objekt a zároveň ho vrací.
+function prevedPokrok(data) {
+  while (data.verze < POKROK_VERZE) {
+    PREVODY[data.verze](data);
+    data.verze++;
+  }
+  // Pojistka: "pozice" musí být objekt (např. kdyby ji někdo v záloze ručně pokazil)
+  if (data.verze >= 2 && (!data.pozice || typeof data.pozice !== "object" || Array.isArray(data.pozice))) {
+    data.pozice = {};
+  }
+  return data;
 }
 
 // Přečte pokrok z localStorage. Při jakémkoli problému vrátí prázdný pokrok
@@ -91,6 +122,23 @@ function nactiPokrok() {
     // Data z novější verze aplikace – nepřepisovat
     pokrokUkladat = false;
     pokrokUpozorneni.push("Uložený pokrok je z novější verze aplikace. Pokrok se teď neukládá, aby se nepřepsal.");
+    return data;
+  }
+
+  if (data.verze < POKROK_VERZE) {
+    // Starší data převedeme a hned uložíme. Původní text si pro jistotu odložíme stranou
+    // (např. "zbrojak-pokrok-pred-prevodem-v1"), kdyby se při převodu něco pokazilo.
+    const puvodniVerze = data.verze;
+    try {
+      localStorage.setItem(POKROK_KLIC + "-pred-prevodem-v" + puvodniVerze, text);
+      prevedPokrok(data);
+      localStorage.setItem(POKROK_KLIC, JSON.stringify(data));
+    } catch (chyba) {
+      console.error(chyba);
+      prevedPokrok(data); // v paměti převedeme i tak, aby aplikace fungovala
+    }
+  } else {
+    prevedPokrok(data); // jen pojistka pro "pozice"
   }
 
   return data;
@@ -171,6 +219,25 @@ function serieProspechu(typ) {
   return serie;
 }
 
+// --- Rozpracovaná pozice v oblasti (od verze 2) ---------------------------------
+
+// Vrátí uloženou pozici v oblasti (kód oblasti, např. "nauka"), nebo null
+function nactiPozici(oblast) {
+  return pokrok.pozice[oblast] || null;
+}
+
+// Uloží pozici v oblasti a pokrok uloží
+function ulozPozici(oblast, pozice) {
+  pokrok.pozice[oblast] = pozice;
+  ulozPokrok();
+}
+
+// Smaže pozici v oblasti (dokončené nebo zahozené kolo)
+function smazPozici(oblast) {
+  delete pokrok.pozice[oblast];
+  ulozPokrok();
+}
+
 // --- Záloha, obnova a smazání (obrazovka „Můj pokrok“) -------------------------
 
 // Text zálohy pro export do souboru JSON
@@ -207,9 +274,10 @@ function prepisUloziste(data) {
   return true;
 }
 
-// Nahradí současný pokrok zálohou (už zkontrolovanou funkcí zkontrolujZalohu)
+// Nahradí současný pokrok zálohou (už zkontrolovanou funkcí zkontrolujZalohu).
+// Záloha starší verze se nejdřív převede na aktuální verzi.
 function nahradPokrok(data) {
-  return prepisUloziste(data);
+  return prepisUloziste(prevedPokrok(data));
 }
 
 // Smaže veškerý pokrok (odpovědi i historii testů)
