@@ -24,6 +24,7 @@ const otazkaEl = document.getElementById("otazka");
 const obrazekEl = document.getElementById("obrazek");
 const odpovediEl = document.getElementById("odpovedi");
 const dalsiEl = document.getElementById("dalsi");
+const vysvetleniEl = document.getElementById("vysvetleni");
 
 const chybyStartEl = document.getElementById("chyby-start");
 const chybyPopisEl = document.getElementById("chyby-popis");
@@ -94,6 +95,7 @@ function zobrazOtazku() {
   // Smažeme tlačítka z předchozí otázky a skryjeme „Další otázka“
   odpovediEl.innerHTML = "";
   dalsiEl.hidden = true;
+  vysvetleniEl.hidden = true;
 
   // Pro každou odpověď vytvoříme tlačítko
   o.odpovedi.forEach(function (text, index) {
@@ -153,9 +155,17 @@ function vyhodnot(zvolena) {
 
   dalsiEl.hidden = false;
 
-  // Na malém displeji může být tlačítko pod okrajem obrazovky – posuneme k němu
-  dalsiEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  // „Vysvětlení v knize“ jen u otázek, které mají v knize místo (rejstřík v kniha.js)
+  vysvetleniEl.hidden = !(typeof mistoVKnize === "function" && mistoVKnize(otazky[aktualni].cislo));
+
+  // Na malém displeji mohou být tlačítka pod okrajem obrazovky – posuneme k nim
+  (vysvetleniEl.hidden ? dalsiEl : vysvetleniEl).scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
+
+// Otevře vysvětlení v knize; tlačítko Zpět v knize vrátí přesně sem (kolo se nemění)
+vysvetleniEl.addEventListener("click", function () {
+  otevriVysvetleni(otazky[aktualni].cislo, "kviz");
+});
 
 // Přechod na další otázku. Po poslední otázce kola:
 //   - v kole oblasti se kolo dokončí (dokonciKoloOblasti),

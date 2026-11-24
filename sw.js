@@ -3,7 +3,7 @@
 // DŮLEŽITÉ: při každé změně souborů aplikace (HTML, CSS, JS, data, ikony, manifest)
 // zvyšte CACHE_VERZE. Jinak telefon dál používá staré soubory z mezipaměti
 // a o nové verzi se nedozví.
-const CACHE_VERZE = 9;
+const CACHE_VERZE = 11;
 const CACHE_NAZEV = "zbrojak-v" + CACHE_VERZE;
 
 // Soubory aplikace. Nepatří sem data/zdroj (PDF) ani nastroje (skripty v Pythonu).

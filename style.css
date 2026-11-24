@@ -545,6 +545,7 @@ h1 {
 /* Lišta „Je dostupná nová verze – načíst“ – přilepená dole, přes celou šířku */
 .aktualizace {
   position: fixed;
+  z-index: 20; /* nad připnutým „Zpět k otázce“ v knize */
   left: 16px;
   right: 16px;
   bottom: max(16px, env(safe-area-inset-bottom));
@@ -787,4 +788,119 @@ h1 {
 
 .tlacitko-zpet:disabled {
   opacity: 0.4;
+}
+
+/* --- Vysvětlení v knize --- */
+/* Tlačítko pod „Další otázka“ a u chybných otázek ve výsledku testu */
+.tlacitko-vysvetleni {
+  width: 100%;
+  margin-top: 12px;
+  margin-bottom: 0;
+}
+
+.tlacitko-vysvetleni[hidden] {
+  display: none;
+}
+
+/* Čísla otázek v řádku „Otázky v testu“: tlačítka dost velká na prst */
+.kniha-cislo {
+  min-width: 44px;
+  min-height: 44px;
+  margin: 2px 0;
+  padding: 0 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  color: #1f5fbf;
+  background: #ffffff;
+  border: 1px solid #c5cbd3;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.kniha-cislo:active {
+  background: #e8eef7;
+}
+
+/* Číslo otázky, ze které uživatel do knihy přišel */
+.kniha-cislo-hledane {
+  font-weight: 700;
+  background: #fff3b0;
+  border: 2px solid #d9a400;
+}
+
+/* Krátké žluté zvýraznění části, na kterou kniha odrolovala */
+.kniha-zvyrazneni {
+  animation: kniha-zvyrazneni 2.5s ease-out;
+  border-radius: 8px;
+}
+
+@keyframes kniha-zvyrazneni {
+  0%,
+  40% {
+    background-color: #fff3b0;
+    box-shadow: 0 0 0 8px #fff3b0;
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+
+/* Okno se zněním otázky (dialog) */
+.otazka-okno {
+  width: calc(100% - 32px);
+  max-width: 560px;
+  max-height: calc(100% - 32px);
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  overflow-y: auto;
+}
+
+.otazka-okno::backdrop {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.otazka-okno .odpoved {
+  cursor: default;
+}
+
+.okno-poznamka {
+  margin: 12px 0 0;
+  color: #666666;
+}
+
+/* „← Zpět k otázce“ připnuté dole na obrazovce při čtení vysvětlení v knize */
+.kapitola-navrat {
+  position: fixed;
+  z-index: 10;
+  left: 16px;
+  right: 16px;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  max-width: 568px;
+  margin: 0 auto;
+  min-height: 56px;
+  padding: 12px 16px;
+  font-size: 1.05rem;
+  font-family: inherit;
+  font-weight: 600;
+  color: #ffffff;
+  background: #1f5fbf;
+  border: none;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+}
+
+.kapitola-navrat:active {
+  background: #174a96;
+}
+
+.kapitola-navrat[hidden] {
+  display: none;
+}
+
+/* Volné místo pod koncem kapitoly, aby ho připnuté tlačítko nezakrývalo */
+#kapitola.s-navratem {
+  padding-bottom: 88px;
 }

@@ -73,6 +73,9 @@
         <button id="kapitola-dalsi" class="tlacitko-zpet" type="button">Další kapitola ▶</button>
       </div>
       <button id="kapitola-seznam" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">← Seznam kapitol</button>
+      <!-- Připnuté dole na obrazovce, když uživatel přišel z otázky („Vysvětlení v knize“) –
+           je vidět pořád, ať je kapitola odrolovaná kamkoli -->
+      <button id="kapitola-navrat" class="kapitola-navrat" type="button" hidden></button>
     </section>
 
     <!-- Můj pokrok: souhrn, historie testů, záloha a smazání (obsluhuje muj-pokrok.js) -->
@@ -144,7 +147,20 @@
         <li>Rámečky v textu: <strong>Na zkoušce</strong> upozorňuje na chyták v testu, <strong>Tip</strong>,
           <strong>Pozor</strong> a <strong>Důležité</strong> jsou praktické rady. Na konci kapitoly je
           zvýrazněné „Shrnutí do kapsy“.</li>
-        <li>Šedý řádek „Otázky v testu“ uvádí čísla otázek ze souboru MV, které daná část vysvětluje.</li>
+        <li>Šedý řádek „Otázky v testu“ uvádí čísla otázek ze souboru MV, které daná část vysvětluje.
+          Ťuknutím na číslo se ukáže znění otázky se správnou odpovědí. Je to jen náhled, do pokroku se nepočítá.</li>
+        <li>Kniha vysvětluje <span data-manual="kniha-otazek">837</span> z <span data-manual="pocet-otazek">837</span> otázek.</li>
+      </ul>
+
+      <h3>Vysvětlení v knize</h3>
+      <ul>
+        <li>Po odpovědi na otázku v procvičování (i v opakování chyb) je pod „Další otázka“ tlačítko
+          <strong>Vysvětlení v knize</strong>. Ve výsledku cvičného testu ho mají všechny chybné otázky.</li>
+        <li>Otevře kapitolu na části, která otázku vysvětluje, krátce ji žlutě zvýrazní a číslo otázky
+          v řádku „Otázky v testu“ označí.</li>
+        <li>Když je otázka vysvětlená na víc místech, otevře se první z nich.</li>
+        <li>Tlačítko <strong>Zpět k otázce</strong> (nebo <strong>Zpět k výsledku testu</strong>) je připnuté dole
+          na obrazovce, takže je vidět, ať odrolujete kamkoli. Vrátí vás přesně tam, odkud jste přišli. Rozpracované kolo se tím nemění, pokračujete tlačítkem „Další otázka“.</li>
       </ul>
 
       <h3>Kdy otázku „umím“</h3>
@@ -262,6 +278,8 @@
 
         <!-- Tlačítko je na začátku skryté (atribut hidden) -->
         <button id="dalsi" class="tlacitko-dalsi" hidden>Další otázka</button>
+        <!-- Otevře v knize část, která otázku vysvětluje (kniha.js) -->
+        <button id="vysvetleni" class="tlacitko-zpet tlacitko-vysvetleni" type="button" hidden>Vysvětlení v knize</button>
       </section>
     </section>
 
@@ -355,6 +373,16 @@
       <p class="poznamka" data-poznamka></p>
     </section>
   </main>
+
+  <!-- Okno se zněním otázky po ťuknutí na číslo v knize (kniha.js); jen náhled, do pokroku se nepočítá -->
+  <dialog id="otazka-okno" class="otazka-okno">
+    <p id="okno-cislo" class="pocitadlo"></p>
+    <img id="okno-obrazek" class="obrazek" alt="" hidden>
+    <p id="okno-otazka" class="otazka"></p>
+    <div id="okno-odpovedi" class="odpovedi"></div>
+    <p class="okno-poznamka">Jen náhled – do pokroku se nepočítá.</p>
+    <button id="okno-zavrit" class="tlacitko-dalsi" type="button">Zavřít</button>
+  </dialog>
 
   <footer class="paticka">
     Neoficiální výuková aplikace. Otázky: soubor testových otázek MV ČR. Bez záruky správnosti.

@@ -9,10 +9,15 @@
 //   rámečky („**Na zkoušce:**“, „**Tip**“, „**Pozor**“, „**Důležité**“), řádek „Otázky: …“,
 //   část „## Shrnutí do kapsy“. Komentáře <!-- … --> (např. nova-strana) se vynechají.
 //
+// Z řádků „Otázky: …“ se sestaví rejstřík „číslo otázky → kapitola a část“. Podle něj
+// tlačítko „Vysvětlení v knize“ (u otázky v procvičování a ve výsledku testu) otevře
+// správné místo a tlačítko Zpět vrátí uživatele tam, odkud přišel.
+//
 // Bezpečnost: každý text se nejdřív escapuje (< > & " ' se změní na entity) a teprve potom
 // se převádí **tučně**. Do stránky se tak nikdy nedostane HTML přímo ze souboru knihy.
 //
-// Využívá z app.js: ukazObrazovku, slovoOtazek; z test.js: manualDalsiHodnoty, doplnManual.
+// Využívá z app.js: ukazObrazovku, slovoOtazek, nastavObrazek, vsechnyOtazky, nacitani;
+// z test.js: manualDalsiHodnoty, doplnManual; z pokrok.js: POKROK_LADENI.
 
 const knihaSeznamEl = document.getElementById("kniha-seznam");
 const knihaZpravaEl = document.getElementById("kniha-zprava");
@@ -23,6 +28,10 @@ const kapitolaObsahSeznamEl = document.getElementById("kapitola-obsah-seznam");
 const kapitolaTextEl = document.getElementById("kapitola-text");
 const kapitolaPredchoziEl = document.getElementById("kapitola-predchozi");
 const kapitolaDalsiEl = document.getElementById("kapitola-dalsi");
+const kapitolaZpetEl = document.getElementById("kapitola-zpet");
+const kapitolaSeznamEl = document.getElementById("kapitola-seznam");
+const kapitolaNavratEl = document.getElementById("kapitola-navrat");
+const oknoEl = document.getElementById("otazka-okno");
 
 // Obsah kniha/kapitoly.json (null, dokud se nenačte nebo když se načíst nepodaří)
 let kniha = null;
@@ -30,8 +39,25 @@ let kniha = null;
 // Už stažené texty kapitol: název souboru → text v Markdownu
 const textyKapitol = {};
 
+// Převedené kapitoly: název souboru → výsledek prevedMarkdown (aby se nepřeváděly znovu)
+const prevedeneKapitoly = {};
+
 // Index právě otevřené kapitoly v kniha.kapitoly (-1 = žádná)
 let aktualniKapitola = -1;
+
+// Rejstřík: číslo otázky → pole míst v knize [{ kapitola: index, cast: id části }]
+// (některé otázky jsou vysvětlené na víc místech; tlačítko otevře první z nich)
+const rejstrik = {};
+
+// Kam se vrátit z kapitoly otevřené přes „Vysvětlení v knize“:
+// { obrazovka: "kviz" | "vysledek", posun: kam byla stránka odrolovaná }; null = do seznamu kapitol
+let navrat = null;
+
+// Popisky tlačítka Zpět podle toho, odkud uživatel do knihy přišel
+const POPISKY_NAVRATU = {
+  kviz: "← Zpět k otázce",
+  vysledek: "← Zpět k výsledku testu",
+};
 
 // --- Převod Markdownu -------------------------------------------------------
 
@@ -63,6 +89,38 @@ const VZOR_OBRAZKU = /!\[([^\]]*)\]\(([^)\s]+)\)/g;
 const VZOR_RADKU_S_OBRAZKY = /^\s*(!\[[^\]]*\]\([^)\s]+\)\s*)+$/;
 const VZOR_POLOZKY = /^( *)(-|\d+\.) (.*)$/;
 const VZOR_OTAZEK = /^Otázky:\s*(.+)$/;
+
+// „720, 721, 780–799“ → [720, 721, 780, 781, …, 799]. Neznámé kousky přeskočí.
+function cislaOtazek(text) {
+  const cisla = [];
+  text.split(",").forEach(function (kus) {
+    const t = kus.trim();
+    let shoda = t.match(/^(\d+)$/);
+    if (shoda) {
+      cisla.push(Number(shoda[1]));
+      return;
+    }
+    shoda = t.match(/^(\d+)\s*[–-]\s*(\d+)$/);
+    if (shoda) {
+      for (let c = Number(shoda[1]); c <= Number(shoda[2]); c++) cisla.push(c);
+    }
+  });
+  return cisla;
+}
+
+// Řádek „Otázky v testu“: každé číslo je tlačítko, které ukáže znění otázky.
+// Čísla jsou jen číslice (z cislaOtazek), takže je lze bezpečně vložit do HTML.
+function otazkyHtml(cisla) {
+  return (
+    '<p class="kniha-otazky">Otázky v testu: ' +
+    cisla
+      .map(function (c) {
+        return '<button type="button" class="kniha-cislo" data-cislo="' + c + '">' + c + "</button>";
+      })
+      .join(" ") +
+    "</p>"
+  );
+}
 
 // Řádek s jedním nebo více obrázky → <figure> s popiskem (víc obrázků vedle sebe)
 function obrazkyHtml(radek) {
@@ -129,10 +187,12 @@ function odstavecHtml(text) {
   return "<p>" + obsah + "</p>";
 }
 
-// Převede celý text kapitoly. Vrátí { nazev, html, casti: [{ id, nazev }] }.
+// Převede celý text kapitoly. Vrátí { nazev, html, casti: [{ id, nazev, otazky }], uvod }.
+// "otazky" = čísla z řádků „Otázky:“ v té části, "uvod" = čísla z úvodu před první částí.
 function prevedMarkdown(text) {
   const radky = text.split(/\r?\n/);
   const casti = [];
+  const uvod = [];
   let nazev = "";
   let html = "";
   let castOtevrena = false;
@@ -158,7 +218,7 @@ function prevedMarkdown(text) {
       const nazevCasti = radek.slice(3).trim();
       const id = "kniha-cast-" + (casti.length + 1);
       const shrnuti = nazevCasti === "Shrnutí do kapsy";
-      casti.push({ id: id, nazev: nazevCasti });
+      casti.push({ id: id, nazev: nazevCasti, otazky: [] });
       html +=
         '<section class="kniha-cast' + (shrnuti ? " kniha-shrnuti" : "") + '" id="' + id + '">' +
         "<h3>" + prevedRadek(nazevCasti) + "</h3>";
@@ -182,9 +242,13 @@ function prevedMarkdown(text) {
       html += obrazkyHtml(radek);
       i++;
     } else if (VZOR_OTAZEK.test(radek.trim())) {
-      // Čísla otázek ze souboru MV, které část vysvětluje (zatím jen jako šedý text)
-      const cisla = radek.trim().match(VZOR_OTAZEK)[1];
-      html += '<p class="kniha-otazky">Otázky v testu: ' + escapujHtml(cisla) + "</p>";
+      // Čísla otázek ze souboru MV, které část vysvětluje
+      const cisla = cislaOtazek(radek.trim().match(VZOR_OTAZEK)[1]);
+      const kam = casti.length > 0 ? casti[casti.length - 1].otazky : uvod;
+      cisla.forEach(function (c) {
+        kam.push(c);
+      });
+      html += otazkyHtml(cisla);
       i++;
     } else {
       // Odstavec: řádky až do prázdného řádku (nebo do nadpisu či seznamu)
@@ -201,7 +265,7 @@ function prevedMarkdown(text) {
   }
 
   if (castOtevrena) html += "</section>";
-  return { nazev: nazev, html: html, casti: casti };
+  return { nazev: nazev, html: html, casti: casti, uvod: uvod };
 }
 
 // --- Seznam kapitol ---------------------------------------------------------
@@ -260,13 +324,59 @@ async function nactiKnihu() {
   zpravaKnihy("");
   vykresliSeznamKapitol();
 
-  // Počet kapitol do manuálu
+  // Texty všech kapitol stáhneme hned (jsou malé), abychom sestavili rejstřík otázek.
+  // Kapitola, která se nenačte, v rejstříku jen chybí – ostatní fungují dál.
+  await Promise.all(
+    kniha.kapitoly.map(async function (kapitola, index) {
+      try {
+        pridejDoRejstriku(index, await prevedenaKapitola(kapitola.soubor));
+      } catch (chyba) {
+        console.error(chyba);
+      }
+    })
+  );
+
+  // Čísla do manuálu
   manualDalsiHodnoty["kniha-kapitol"] = kniha.kapitoly.length;
+  manualDalsiHodnoty["kniha-otazek"] = Object.keys(rejstrik).length;
   doplnManual();
   return true;
 }
 
+// Zapíše do rejstříku všechna čísla otázek z jedné převedené kapitoly
+function pridejDoRejstriku(indexKapitoly, prevod) {
+  function pridej(cislo, cast) {
+    const mista = rejstrik[cislo] || (rejstrik[cislo] = []);
+    const uzTamJe = mista.some(function (m) {
+      return m.kapitola === indexKapitoly && m.cast === cast;
+    });
+    if (!uzTamJe) mista.push({ kapitola: indexKapitoly, cast: cast });
+  }
+  prevod.uvod.forEach(function (c) {
+    pridej(c, null); // null = úvod kapitoly (začátek stránky)
+  });
+  prevod.casti.forEach(function (cast) {
+    cast.otazky.forEach(function (c) {
+      pridej(c, cast.id);
+    });
+  });
+}
+
+// První místo v knize, kde je otázka vysvětlená, nebo null
+function mistoVKnize(cislo) {
+  const mista = rejstrik[cislo];
+  return mista && mista.length > 0 ? mista[0] : null;
+}
+
 // --- Čtení kapitoly ---------------------------------------------------------
+
+// Převede kapitolu do HTML (jen poprvé, pak vezme hotový výsledek)
+async function prevedenaKapitola(soubor) {
+  if (!prevedeneKapitoly[soubor]) {
+    prevedeneKapitoly[soubor] = prevedMarkdown(await textKapitoly(soubor));
+  }
+  return prevedeneKapitoly[soubor];
+}
 
 // Stáhne text kapitoly (jen poprvé, pak ho vezme z textyKapitol)
 async function textKapitoly(soubor) {
@@ -301,7 +411,9 @@ function vykresliObsahKapitoly(casti) {
   });
 }
 
-async function otevriKapitolu(index) {
+// Otevře kapitolu. Nepovinný "cil" = { cast: id části nebo null, cislo: číslo otázky }:
+// stránka pak odroluje na tu část, krátce ji zvýrazní a označí číslo otázky.
+async function otevriKapitolu(index, cil) {
   if (!kniha || index < 0 || index >= kniha.kapitoly.length) return;
   const kapitola = kniha.kapitoly[index];
   aktualniKapitola = index;
@@ -310,9 +422,9 @@ async function otevriKapitolu(index) {
   kapitolaPredchoziEl.disabled = index === 0;
   kapitolaDalsiEl.disabled = index === kniha.kapitoly.length - 1;
 
-  let text;
+  let prevod;
   try {
-    text = await textKapitoly(kapitola.soubor);
+    prevod = await prevedenaKapitola(kapitola.soubor);
   } catch (chyba) {
     console.error(chyba);
     kapitolaObsahEl.hidden = true;
@@ -327,26 +439,145 @@ async function otevriKapitolu(index) {
   // Mezitím mohl uživatel ťuknout na jinou kapitolu – pak tuhle už nevykreslujeme
   if (aktualniKapitola !== index) return;
 
-  const prevod = prevedMarkdown(text);
   kapitolaTextEl.innerHTML = prevod.html; // bezpečné: veškerý text prošel escapujHtml
   vykresliObsahKapitoly(prevod.casti);
   ukazObrazovku("kapitola");
+  if (cil) ukazMistoVKapitole(cil);
 }
+
+// Odroluje na část kapitoly, krátce ji zvýrazní a označí v ní číslo otázky
+function ukazMistoVKapitole(cil) {
+  const cast = cil.cast ? document.getElementById(cil.cast) : null;
+  const cislo = kapitolaTextEl.querySelector(
+    (cast ? "#" + cil.cast + " " : "") + '.kniha-cislo[data-cislo="' + Number(cil.cislo) + '"]'
+  );
+  if (cislo) cislo.classList.add("kniha-cislo-hledane");
+  if (!cast) return; // otázka je v úvodu kapitoly – stačí začátek stránky
+
+  cast.scrollIntoView({ block: "start" });
+
+  // Obrázky nad cílem se načítají postupně a mohou text posunout dolů. Krátce po otevření
+  // proto po načtení každého obrázku odrolujeme na cíl znovu (pokud uživatel nezačal rolovat sám).
+  const konecSrovnavani = Date.now() + 2000;
+  let uzivatelRoluje = false;
+  function uzivatelSahl() {
+    uzivatelRoluje = true;
+  }
+  window.addEventListener("touchstart", uzivatelSahl, { once: true, passive: true });
+  window.addEventListener("wheel", uzivatelSahl, { once: true, passive: true });
+  kapitolaTextEl.querySelectorAll("img").forEach(function (obrazek) {
+    if (obrazek.complete) return;
+    obrazek.addEventListener("load", function () {
+      if (!uzivatelRoluje && Date.now() < konecSrovnavani && !kapitolaTextEl.closest("[hidden]")) {
+        cast.scrollIntoView({ block: "start" });
+      }
+    }, { once: true });
+  });
+
+  // Zvýraznění je animace v CSS; odebrání a nové přidání třídy ji spustí znovu
+  cast.classList.remove("kniha-zvyrazneni");
+  void cast.offsetWidth;
+  cast.classList.add("kniha-zvyrazneni");
+}
+
+// --- Z otázky do knihy a zpět -----------------------------------------------
+
+// Popisky obou tlačítek Zpět v kapitole podle toho, kam se vracíme
+function nastavTlacitkaZpet() {
+  const popisek = navrat ? POPISKY_NAVRATU[navrat.obrazovka] : "← Seznam kapitol";
+  kapitolaZpetEl.textContent = popisek;
+  kapitolaSeznamEl.textContent = popisek;
+  // Připnuté tlačítko dole jen při návratu k otázce / výsledku
+  kapitolaNavratEl.textContent = popisek;
+  kapitolaNavratEl.hidden = !navrat;
+  // Místo dole pod textem, aby připnuté tlačítko nezakrylo konec kapitoly
+  document.getElementById("kapitola").classList.toggle("s-navratem", Boolean(navrat));
+}
+
+// Otevře v knize vysvětlení otázky. "odkud" je obrazovka, na kterou se pak vrátit
+// ("kviz" nebo "vysledek"). Obrazovka zůstane, jak byla (rozpracované kolo se nemění),
+// zapamatujeme si jen, kam byla odrolovaná.
+function otevriVysvetleni(cislo, odkud) {
+  const misto = mistoVKnize(cislo);
+  if (!misto) return;
+  navrat = { obrazovka: odkud, posun: window.scrollY };
+  nastavTlacitkaZpet();
+  otevriKapitolu(misto.kapitola, { cast: misto.cast, cislo: cislo });
+}
+
+// Tlačítko Zpět v kapitole: k otázce / výsledku testu, nebo do seznamu kapitol
+function zpetZKapitoly() {
+  if (navrat) {
+    const kam = navrat;
+    navrat = null;
+    nastavTlacitkaZpet();
+    ukazObrazovku(kam.obrazovka);
+    window.scrollTo(0, kam.posun);
+  } else {
+    ukazObrazovku("kniha");
+  }
+}
+
+// --- Okno se zněním otázky (klepnutí na číslo v řádku „Otázky v testu“) -----
+
+// Ukáže otázku se správnou odpovědí. Jen náhled – do pokroku se nic nezapisuje.
+function ukazOtazkuVOkne(cislo) {
+  const o = vsechnyOtazky.find(function (q) {
+    return q.cislo === cislo;
+  });
+  if (!o) return;
+
+  document.getElementById("okno-cislo").textContent = "Otázka č. " + o.cislo + " v souboru MV";
+  nastavObrazek(document.getElementById("okno-obrazek"), o);
+  document.getElementById("okno-otazka").textContent = o.otazka;
+
+  const odpovediEl = document.getElementById("okno-odpovedi");
+  odpovediEl.innerHTML = "";
+  o.odpovedi.forEach(function (text, i) {
+    const radek = document.createElement("div");
+    radek.className = "odpoved" + (i === o.spravna ? " spravne" : "");
+    radek.textContent = text + (i === o.spravna ? "  ✓ správně" : "");
+    odpovediEl.appendChild(radek);
+  });
+
+  if (typeof oknoEl.showModal === "function") {
+    oknoEl.showModal();
+  } else {
+    oknoEl.setAttribute("open", ""); // starší prohlížeč bez <dialog>
+  }
+  oknoEl.scrollTop = 0;
+}
+
+function zavriOkno() {
+  if (typeof oknoEl.close === "function") oknoEl.close();
+  else oknoEl.removeAttribute("open");
+}
+
+// Čísla otázek v textu vznikají při každém vykreslení znovu, proto jedno společné obsloužení
+kapitolaTextEl.addEventListener("click", function (udalost) {
+  const tlacitko = udalost.target.closest(".kniha-cislo");
+  if (tlacitko) ukazOtazkuVOkne(Number(tlacitko.dataset.cislo));
+});
+document.getElementById("okno-zavrit").addEventListener("click", zavriOkno);
+// Ťuknutí na ztmavené pozadí mimo okno ho také zavře
+oknoEl.addEventListener("click", function (udalost) {
+  if (udalost.target === oknoEl) zavriOkno();
+});
 
 // --- Tlačítka ---------------------------------------------------------------
 
 document.getElementById("kniha-otevrit").addEventListener("click", function () {
+  // Z menu otevřená kniha se vrací do seznamu kapitol, ne k otázce
+  navrat = null;
+  nastavTlacitkaZpet();
   ukazObrazovku("kniha");
 });
 document.getElementById("kniha-zpet").addEventListener("click", function () {
   ukazObrazovku("menu");
 });
-document.getElementById("kapitola-zpet").addEventListener("click", function () {
-  ukazObrazovku("kniha");
-});
-document.getElementById("kapitola-seznam").addEventListener("click", function () {
-  ukazObrazovku("kniha");
-});
+kapitolaZpetEl.addEventListener("click", zpetZKapitoly);
+kapitolaSeznamEl.addEventListener("click", zpetZKapitoly);
+kapitolaNavratEl.addEventListener("click", zpetZKapitoly);
 kapitolaPredchoziEl.addEventListener("click", function () {
   otevriKapitolu(aktualniKapitola - 1);
 });
@@ -354,5 +585,50 @@ kapitolaDalsiEl.addEventListener("click", function () {
   otevriKapitolu(aktualniKapitola + 1);
 });
 
-// Seznam kapitol načteme hned při startu (texty kapitol až při otevření)
+// Knihu načteme hned při startu (seznam kapitol i texty kvůli rejstříku)
 const nacitaniKnihy = nactiKnihu();
+
+// Ladicí režim (?ladeni=1): kontrola do konzole, že každá otázka má v knize aspoň jedno místo
+// a že kniha neodkazuje na otázku, která neexistuje
+if (POKROK_LADENI) {
+  Promise.all([nacitani, nacitaniKnihy]).then(function (vysledky) {
+    if (!vysledky[0] || !vysledky[1]) {
+      console.warn("Kontrola rejstříku knihy: otázky nebo kniha se nenačetly.");
+      return;
+    }
+    const existuje = {};
+    vsechnyOtazky.forEach(function (o) {
+      existuje[o.cislo] = true;
+    });
+    const bezMista = vsechnyOtazky
+      .filter(function (o) {
+        return !rejstrik[o.cislo];
+      })
+      .map(function (o) {
+        return o.cislo;
+      });
+    const neznama = Object.keys(rejstrik)
+      .map(Number)
+      .filter(function (c) {
+        return !existuje[c];
+      });
+    const naVicMistech = Object.keys(rejstrik).filter(function (c) {
+      return rejstrik[c].length > 1;
+    });
+
+    if (bezMista.length === 0 && neznama.length === 0) {
+      console.info(
+        "Kontrola rejstříku knihy: OK – všech " + vsechnyOtazky.length +
+        " otázek má v knize aspoň jedno místo (" + naVicMistech.length + " na víc místech: " +
+        naVicMistech.join(", ") + ")."
+      );
+    } else {
+      if (bezMista.length > 0) {
+        console.warn("Kontrola rejstříku knihy: " + bezMista.length + " otázek nemá v knize místo:", bezMista);
+      }
+      if (neznama.length > 0) {
+        console.warn("Kontrola rejstříku knihy: kniha odkazuje na neexistující otázky:", neznama);
+      }
+    }
+  });
+}

@@ -337,6 +337,18 @@ function vykresliPrehled() {
     });
     polozka.appendChild(seznam);
 
+    // U chybných otázek odkaz do knihy (kniha.js); Zpět v knize vrátí na toto místo výsledku
+    if (zvolena !== o.spravna && typeof mistoVKnize === "function" && mistoVKnize(o.cislo)) {
+      const vysvetleni = document.createElement("button");
+      vysvetleni.type = "button";
+      vysvetleni.className = "tlacitko-zpet tlacitko-vysvetleni";
+      vysvetleni.textContent = "Vysvětlení v knize";
+      vysvetleni.addEventListener("click", function () {
+        otevriVysvetleni(o.cislo, "vysledek");
+      });
+      polozka.appendChild(vysvetleni);
+    }
+
     vysledekSeznamEl.appendChild(polozka);
   });
 }
