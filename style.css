@@ -901,6 +901,12 @@ h1 {
 }
 
 /* Volné místo pod koncem kapitoly, aby ho připnuté tlačítko nezakrývalo */
-#kapitola.s-navratem {
+#kapitola {
   padding-bottom: 88px;
+}
+
+/* „Pokračovat ve čtení“ nad seznamem kapitol – odsazené od kapitol pod ním */
+.tlacitko-cteni {
+  min-height: 64px;
+  margin-bottom: 16px;
 }

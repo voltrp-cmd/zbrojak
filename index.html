@@ -53,6 +53,11 @@
       <h2 class="menu-nadpis">Studijní materiály</h2>
       <p id="kniha-podnadpis" class="kniha-podnadpis"></p>
       <p id="kniha-zprava" class="menu-zprava">Načítám kapitoly…</p>
+      <!-- Poslední místo čtení (kniha.js); skryté, když ještě nic čteno nebylo -->
+      <button id="cteni-pokracovat" class="tlacitko-oblast tlacitko-pokracovat tlacitko-cteni" type="button" hidden>
+        <span id="cteni-pokracovat-nazev" class="tlacitko-oblast-nazev"></span>
+        <span id="cteni-pokracovat-popis" class="tlacitko-oblast-pocet"></span>
+      </button>
       <!-- Sem kniha.js vloží tlačítka kapitol -->
       <div id="kniha-seznam" class="oblasti-tlacitka"></div>
     </section>
@@ -73,9 +78,9 @@
         <button id="kapitola-dalsi" class="tlacitko-zpet" type="button">Další kapitola ▶</button>
       </div>
       <button id="kapitola-seznam" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">← Seznam kapitol</button>
-      <!-- Připnuté dole na obrazovce, když uživatel přišel z otázky („Vysvětlení v knize“) –
-           je vidět pořád, ať je kapitola odrolovaná kamkoli -->
-      <button id="kapitola-navrat" class="kapitola-navrat" type="button" hidden></button>
+      <!-- Připnuté dole na obrazovce – je vidět pořád, ať je kapitola odrolovaná kamkoli.
+           Popisek: „← Seznam kapitol“, nebo „← Zpět k otázce“ po „Vysvětlení v knize“ (kniha.js) -->
+      <button id="kapitola-navrat" class="kapitola-navrat" type="button">← Seznam kapitol</button>
     </section>
 
     <!-- Můj pokrok: souhrn, historie testů, záloha a smazání (obsluhuje muj-pokrok.js) -->
@@ -143,7 +148,11 @@
           (<span data-manual="kniha-kapitol">12</span> kapitol). U každé kapitoly je vidět, kolik otázek z testu vysvětluje.</li>
         <li>Ťuknutím se kapitola otevře. Nahoře je „Obsah kapitoly“ – po rozbalení ťukněte na část
           a stránka na ni odroluje.</li>
-        <li>Dole jsou tlačítka „Předchozí kapitola“ a „Další kapitola“, nahoře i dole „Seznam kapitol“.</li>
+        <li>Dole jsou tlačítka „Předchozí kapitola“ a „Další kapitola“. Tlačítko „Seznam kapitol“ je připnuté
+          dole na obrazovce, takže se k němu nemusíte dorolovat.</li>
+        <li>Aplikace si pamatuje, kterou kapitolu jste četli naposledy a kam jste v ní dorolovali – i po zavření.
+          Nad seznamem kapitol pak nabídne <strong>Pokračovat ve čtení</strong> a vrátí vás na to místo.
+          Odskok do knihy přes „Vysvětlení v knize“ si nepamatuje, abyste o své místo nepřišli.</li>
         <li>Rámečky v textu: <strong>Na zkoušce</strong> upozorňuje na chyták v testu, <strong>Tip</strong>,
           <strong>Pozor</strong> a <strong>Důležité</strong> jsou praktické rady. Na konci kapitoly je
           zvýrazněné „Shrnutí do kapsy“.</li>
@@ -213,7 +222,8 @@
 
       <h3>Kde se ukládá pokrok</h3>
       <ul>
-        <li>Pokrok (odpovědi a historie testů) se ukládá jen v tomto prohlížeči na tomto zařízení.</li>
+        <li>Pokrok (odpovědi a historie testů) se ukládá jen v tomto prohlížeči na tomto zařízení.
+          Stejně tak místo, kde čtete studijní materiály (to není součástí zálohy pokroku).</li>
         <li>V jiném prohlížeči, na jiném zařízení nebo na jiné adrese aplikace začínáte od nuly.</li>
         <li>Smazáním dat prohlížeče (historie, cookies a data webů) se pokrok smaže.</li>
         <li>Safari na iPhonu může data smazat, když aplikaci 7 dní neotevřete.</li>
