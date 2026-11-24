@@ -10,7 +10,8 @@ Ověří, že:
   - žádný text (otázka ani odpověď) není prázdný,
   - každý odkazovaný obrázek opravdu existuje,
   - každá otázka patří do známého okruhu (oddílu) a známé oblasti zkoušky,
-  - každá oblast má aspoň tolik otázek, kolik jich je v testu.
+  - každá oblast má aspoň tolik otázek, kolik jich je v testu,
+  - soubory pro offline režim (sw.js) a kapitoly knihy s obrázky existují.
 Na konci vypíše počty otázek po okruzích a po oblastech zkoušky.
 
 Používá jen standardní knihovnu Pythonu, nepotřebuje .venv.
@@ -84,6 +85,37 @@ def zkontroluj_sw():
             chyby.append(f"sw.js: {cesta} do offline mezipaměti nepatří")
 
     print(f"\nOffline (sw.js): CACHE_VERZE {verze.group(1)}, {len(cesty)} souborů v seznamu SOUBORY")
+    return chyby
+
+
+def zkontroluj_knihu():
+    """Ověří knihu (kniha/kapitoly.json): každá kapitola i každý obrázek v ní musí existovat.
+    Service worker je při instalaci stahuje do offline mezipaměti – chybějící soubor by
+    instalaci shodil."""
+    import re
+
+    try:
+        kniha = json.loads((PROJEKT / "kniha" / "kapitoly.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
+        return [f"kniha/kapitoly.json: nejde přečíst ({e})"]
+
+    chyby = []
+    obrazky = set()
+    for kapitola in kniha.get("kapitoly", []):
+        cesta = PROJEKT / "kniha" / kapitola["soubor"]
+        if not cesta.is_file():
+            chyby.append(f"kniha: kapitola {kapitola['soubor']} neexistuje")
+            continue
+        text = cesta.read_text(encoding="utf-8")
+        for obrazek in re.findall(r"!\[[^\]]*\]\(([^)\s]+)\)", text):
+            if not obrazek.startswith("../data/obrazky/"):
+                chyby.append(f"kniha: {kapitola['soubor']}: obrázek {obrazek} není v data/obrazky/")
+            elif not (PROJEKT / "kniha" / obrazek).resolve().is_file():
+                chyby.append(f"kniha: {kapitola['soubor']}: obrázek {obrazek} neexistuje")
+            obrazky.add(obrazek)
+
+    print(f"\nKniha (kniha/kapitoly.json): {len(kniha.get('kapitoly', []))} kapitol, "
+          f"{len(obrazky)} různých obrázků")
     return chyby
 
 
@@ -161,6 +193,9 @@ def main():
 
     # 9) Soubory pro offline režim (seznam SOUBORY v sw.js) musí existovat
     chyby.extend(zkontroluj_sw())
+
+    # 10) Kniha: kapitoly a jejich obrázky musí existovat (ukládají se pro offline)
+    chyby.extend(zkontroluj_knihu())
 
     if chyby:
         print(f"\nNALEZENO CHYB: {len(chyby)}")

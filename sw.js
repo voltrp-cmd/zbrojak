@@ -3,11 +3,13 @@
 // DŮLEŽITÉ: při každé změně souborů aplikace (HTML, CSS, JS, data, ikony, manifest)
 // zvyšte CACHE_VERZE. Jinak telefon dál používá staré soubory z mezipaměti
 // a o nové verzi se nedozví.
-const CACHE_VERZE = 8;
+const CACHE_VERZE = 9;
 const CACHE_NAZEV = "zbrojak-v" + CACHE_VERZE;
 
 // Soubory aplikace. Nepatří sem data/zdroj (PDF) ani nastroje (skripty v Pythonu).
-// Obrázky k otázkám se doplní automaticky podle data/otazky.json (viz install).
+// Doplní se automaticky (viz install):
+//   - obrázky k otázkám podle data/otazky.json,
+//   - kapitoly knihy podle kniha/kapitoly.json a obrázky, které kapitoly používají.
 const SOUBORY = [
   "./",
   "index.html",
@@ -18,6 +20,7 @@ const SOUBORY = [
   "muj-pokrok.js",
   "pwa.js",
   "posuvnik.js",
+  "kniha.js",
   "manifest.json",
   "ikony/ikona-192.png",
   "ikony/ikona-512.png",
@@ -25,7 +28,11 @@ const SOUBORY = [
   "ikony/ikona-maskable-512.png",
   "data/otazky.json",
   "data/pravidla.json",
+  "kniha/kapitoly.json",
 ];
+
+// Obrázek v textu knihy: ![popisek](../data/obrazky/656.jpg) – cesta je relativní ke složce kniha/
+const VZOR_OBRAZKU_KNIHY = /!\[[^\]]*\]\(\.\.\/(data\/obrazky\/[^)\s]+)\)/g;
 
 // Instalace: stáhneme a uložíme všechny soubory. Když se cokoli nepovede stáhnout,
 // instalace selže celá a zůstane platit předchozí verze (žádná napůl uložená aplikace).
@@ -42,6 +49,24 @@ self.addEventListener("install", function (udalost) {
       data.otazky.forEach(function (o) {
         if (o.obrazek) obrazky.add(o.obrazek);
       });
+
+      // Kapitoly knihy: seznam souborů vezmeme z uložené kniha/kapitoly.json
+      const knihaOdpoved = await cache.match("kniha/kapitoly.json");
+      const kniha = await knihaOdpoved.json();
+      const kapitoly = kniha.kapitoly.map(function (k) {
+        return "kniha/" + k.soubor;
+      });
+      await cache.addAll(kapitoly);
+
+      // Obrázky z knihy: většina je zároveň u otázek, ale kdyby kniha použila jiný,
+      // najdeme ho přímo v textu kapitol (Set zajistí, že se nic nestáhne dvakrát)
+      for (const kapitola of kapitoly) {
+        const text = await (await cache.match(kapitola)).text();
+        for (const shoda of text.matchAll(VZOR_OBRAZKU_KNIHY)) {
+          obrazky.add(shoda[1]);
+        }
+      }
+
       await cache.addAll(Array.from(obrazky));
     })()
   );
