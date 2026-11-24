@@ -373,24 +373,31 @@ function zobrazSeriiTestu() {
 
 // --- Čísla v manuálu ----------------------------------------------------------
 
-// Doplní do manuálu (index.html, <span data-manual="…">) čísla z dat a pravidel,
-// aby text odpovídal skutečnému nastavení i po změně pravidel
-function doplnManual(pocetVTestu) {
-  const rozpis = Object.keys(oblasti)
-    .map(function (kod) {
-      return oblasti[kod].otazek_v_testu;
-    })
-    .join(" / ");
+// Čísla pro manuál, která dodávají jiné soubory (např. kniha.js: počet kapitol).
+// Klíč = hodnota atributu data-manual, hodnota = číslo nebo text.
+const manualDalsiHodnoty = {};
 
-  const hodnoty = {
-    "pocet-otazek": vsechnyOtazky.length,
-    "umim-hranice": UMIM_HRANICE,
-    "test-pocet": pocetVTestu,
-    "test-rozpis": rozpis,
-    "test-limit": pravidla.casovy_limit_minut,
-    "minimum-obecne": pravidla.minimum_spravnych.obecne,
-    "minimum-rozsirene": pravidla.minimum_spravnych.rozsirene,
-  };
+// Doplní do manuálu (index.html, <span data-manual="…">) čísla z dat a pravidel,
+// aby text odpovídal skutečnému nastavení i po změně pravidel.
+// Dá se volat kdykoli: co ještě není načtené (otázky, pravidla, kniha), se přeskočí.
+function doplnManual() {
+  const hodnoty = Object.assign({}, manualDalsiHodnoty);
+
+  if (vsechnyOtazky.length > 0) {
+    hodnoty["pocet-otazek"] = vsechnyOtazky.length;
+    hodnoty["test-pocet"] = pocetOtazekTestu();
+    hodnoty["test-rozpis"] = Object.keys(oblasti)
+      .map(function (kod) {
+        return oblasti[kod].otazek_v_testu;
+      })
+      .join(" / ");
+  }
+  hodnoty["umim-hranice"] = UMIM_HRANICE;
+  if (pravidla) {
+    hodnoty["test-limit"] = pravidla.casovy_limit_minut;
+    hodnoty["minimum-obecne"] = pravidla.minimum_spravnych.obecne;
+    hodnoty["minimum-rozsirene"] = pravidla.minimum_spravnych.rozsirene;
+  }
   if (verzePdf) {
     // "2025-12-15" → "15. 12. 2025"
     const casti = verzePdf.split("-");
@@ -440,7 +447,7 @@ Promise.all([nacitani, nactiPravidla()]).then(function (vysledky) {
   document.querySelectorAll("[data-minimum]").forEach(function (el) {
     el.textContent = "Nejméně " + pravidla.minimum_spravnych[el.dataset.minimum] + " správných z " + pocet;
   });
-  doplnManual(pocet);
+  doplnManual();
 
   document.querySelectorAll("[data-poznamka]").forEach(function (el) {
     el.textContent = "Cvičný test je neoficiální. Časový limit a minima – " + pravidla.poznamka + ".";

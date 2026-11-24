@@ -46,6 +46,11 @@ projektu, nikdy globálně. Složka `.venv` je v `.gitignore`.
   `.venv/bin/python -m pip install pdfplumber`
 - K PDF nástrojům potřebujeme i `poppler` (`brew install poppler`).
 
+## Studijní materiály (kniha)
+- Text knihy je v `kniha/*.md`, pořadí a názvy kapitol v `kniha/kapitoly.json`. Tyto soubory
+  neupravovat – jsou zdrojem i pro PDF verzi knihy (`nastroje/sazba_knihy.py`).
+- V aplikaci je zobrazuje `kniha.js` (vlastní převod Markdownu, žádná knihovna).
+
 ## Mobil na prvním místě
 - Navrhuj nejdřív pro úzkou obrazovku telefonu, pak teprve pro větší.
 - Tlačítka a odkazy dost velké na ovládání prstem (aspoň 44 × 44 px).

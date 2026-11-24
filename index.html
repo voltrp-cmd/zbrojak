@@ -42,8 +42,37 @@
       <!-- Série úspěšných testů („prospěl 3× za sebou“) doplní test.js -->
       <p id="test-serie" class="test-serie"></p>
 
-      <button id="pokrok-otevrit" class="tlacitko-zpet tlacitko-manual" type="button">Můj pokrok</button>
+      <button id="kniha-otevrit" class="tlacitko-zpet tlacitko-manual" type="button">Studijní materiály</button>
+      <button id="pokrok-otevrit" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">Můj pokrok</button>
       <button id="manual-otevrit" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">Jak aplikace funguje</button>
+    </section>
+
+    <!-- Studijní materiály: seznam kapitol knihy (obsluhuje kniha.js) -->
+    <section id="kniha" hidden>
+      <button id="kniha-zpet" class="tlacitko-zpet" type="button">← Zpět do menu</button>
+      <h2 class="menu-nadpis">Studijní materiály</h2>
+      <p id="kniha-podnadpis" class="kniha-podnadpis"></p>
+      <p id="kniha-zprava" class="menu-zprava">Načítám kapitoly…</p>
+      <!-- Sem kniha.js vloží tlačítka kapitol -->
+      <div id="kniha-seznam" class="oblasti-tlacitka"></div>
+    </section>
+
+    <!-- Čtení jedné kapitoly (obsluhuje kniha.js) -->
+    <section id="kapitola" hidden>
+      <button id="kapitola-zpet" class="tlacitko-zpet" type="button">← Seznam kapitol</button>
+      <p id="kapitola-poradi" class="pocitadlo"></p>
+      <!-- Rozbalovací obsah s částmi kapitoly (##) -->
+      <details id="kapitola-obsah" class="kapitola-obsah">
+        <summary>Obsah kapitoly</summary>
+        <ol id="kapitola-obsah-seznam"></ol>
+      </details>
+      <!-- Sem kniha.js vloží převedený text kapitoly -->
+      <article id="kapitola-text" class="karta kniha-text"></article>
+      <div class="kapitola-navigace">
+        <button id="kapitola-predchozi" class="tlacitko-zpet" type="button">◀ Předchozí kapitola</button>
+        <button id="kapitola-dalsi" class="tlacitko-zpet" type="button">Další kapitola ▶</button>
+      </div>
+      <button id="kapitola-seznam" class="tlacitko-zpet tlacitko-manual tlacitko-manual-dalsi" type="button">← Seznam kapitol</button>
     </section>
 
     <!-- Můj pokrok: souhrn, historie testů, záloha a smazání (obsluhuje muj-pokrok.js) -->
@@ -103,6 +132,19 @@
         <li>Když je kolo rozpracované a zvolíte nové, aplikace se zeptá, jestli rozpracované kolo zahodit.</li>
         <li>Po poslední otázce kola uvidíte souhrn: kolik otázek jste zodpověděli, kolik správně a kolik
           otázek v oblasti teď umíte.</li>
+      </ul>
+
+      <h3>Studijní materiály</h3>
+      <ul>
+        <li>V menu pod tlačítkem „Studijní materiály“ je studijní text k přípravě na zkoušku
+          (<span data-manual="kniha-kapitol">12</span> kapitol). U každé kapitoly je vidět, kolik otázek z testu vysvětluje.</li>
+        <li>Ťuknutím se kapitola otevře. Nahoře je „Obsah kapitoly“ – po rozbalení ťukněte na část
+          a stránka na ni odroluje.</li>
+        <li>Dole jsou tlačítka „Předchozí kapitola“ a „Další kapitola“, nahoře i dole „Seznam kapitol“.</li>
+        <li>Rámečky v textu: <strong>Na zkoušce</strong> upozorňuje na chyták v testu, <strong>Tip</strong>,
+          <strong>Pozor</strong> a <strong>Důležité</strong> jsou praktické rady. Na konci kapitoly je
+          zvýrazněné „Shrnutí do kapsy“.</li>
+        <li>Šedý řádek „Otázky v testu“ uvádí čísla otázek ze souboru MV, které daná část vysvětluje.</li>
       </ul>
 
       <h3>Kdy otázku „umím“</h3>
@@ -326,6 +368,8 @@
   <script src="app.js"></script>
   <script src="test.js"></script>
   <script src="muj-pokrok.js"></script>
+  <!-- Studijní materiály (kniha); potřebuje app.js a test.js -->
+  <script src="kniha.js"></script>
   <!-- PWA: registrace service workeru (offline režim, nabídka nové verze) -->
   <script src="pwa.js"></script>
   <!-- Ladicí nástroje se načtou jen s ?ladeni=1 v adrese (např. http://localhost:8080/?ladeni=1).

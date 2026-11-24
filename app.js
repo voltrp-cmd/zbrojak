@@ -41,6 +41,7 @@ let aktualniOblast = null;
 // Všechny obrazovky aplikace – vždy je vidět jen jedna (používá i test.js)
 const OBRAZOVKY = [
   "menu", "oblast-volba", "kviz", "kolo-konec", "chyby-konec", "test-vyber", "test", "vysledek", "manual", "muj-pokrok",
+  "kniha", "kapitola",
 ];
 
 function ukazObrazovku(id) {

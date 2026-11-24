@@ -1,0 +1,66 @@
+{
+  "nazev": "Zbroják – studijní text",
+  "verze": "1 (koncept k revizi, 21. 11. 2026)",
+  "kapitoly": [
+    {
+      "soubor": "01a-pravo-zaklady.md",
+      "nazev": "Právo I: Základy zákona o zbraních a střelivu",
+      "pocet_otazek": 77
+    },
+    {
+      "soubor": "01b-pravo-zbrojni-opravneni.md",
+      "nazev": "Právo II: Zbrojní oprávnění a zkouška",
+      "pocet_otazek": 79
+    },
+    {
+      "soubor": "01c-pravo-licence-vyjimky.md",
+      "nazev": "Právo III: Zbrojní licence, výjimky, povolení a autorizace",
+      "pocet_otazek": 71
+    },
+    {
+      "soubor": "01d-pravo-strelba-registrace.md",
+      "nazev": "Právo IV: Kde střílet, střelnice, registrace a půjčování zbraní",
+      "pocet_otazek": 94
+    },
+    {
+      "soubor": "01e-pravo-noseni-zabezpeceni.md",
+      "nazev": "Právo V: Nošení, zabezpečení, přeprava a dohled státu",
+      "pocet_otazek": 124
+    },
+    {
+      "soubor": "01f-pravo-kategorie-pojmy.md",
+      "nazev": "Právo VI: Pojmy a zařazení zbraní a střeliva do kategorií",
+      "pocet_otazek": 116
+    },
+    {
+      "soubor": "01g-pravo-dalsi-predpisy.md",
+      "nazev": "Právo VII: Prováděcí a další předpisy, nutná obrana a krajní nouze",
+      "pocet_otazek": 52
+    },
+    {
+      "soubor": "02-nauka-o-zbranich.md",
+      "nazev": "Nauka o zbraních a střelivu",
+      "pocet_otazek": 130
+    },
+    {
+      "soubor": "03-bezpecne-zachazeni.md",
+      "nazev": "Bezpečné zacházení se zbraní a střelivem",
+      "pocet_otazek": 21
+    },
+    {
+      "soubor": "04-zdravotnicke-minimum.md",
+      "nazev": "Zdravotnické minimum",
+      "pocet_otazek": 38
+    },
+    {
+      "soubor": "05-prakticka-cast.md",
+      "nazev": "Praktická část zkoušky",
+      "pocet_otazek": 37
+    },
+    {
+      "soubor": "06-shrnuti-a-zaver.md",
+      "nazev": "Shrnutí a závěr",
+      "pocet_otazek": 0
+    }
+  ]
+}

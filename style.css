@@ -612,3 +612,179 @@ h1 {
   height: 22px;
 }
 /* konec DOČASNÉHO bloku */
+
+/* --- Studijní materiály (kniha) --- */
+.kniha-podnadpis {
+  margin: -4px 0 12px;
+  color: #555555;
+}
+
+/* Tlačítko kapitoly: nemusí být tak vysoké jako tlačítko oblasti */
+.tlacitko-kapitola {
+  min-height: 64px;
+}
+
+/* Rozbalovací obsah kapitoly */
+.kapitola-obsah {
+  margin: 0 0 12px;
+  background: #ffffff;
+  border: 2px solid #c5cbd3;
+  border-radius: 12px;
+}
+
+.kapitola-obsah[hidden] {
+  display: none;
+}
+
+.kapitola-obsah summary {
+  min-height: 48px;
+  padding: 12px 16px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.kapitola-obsah ol {
+  margin: 0;
+  padding: 0 16px 8px 40px;
+}
+
+/* Odkazy v obsahu: celý řádek je dost velký na ťuknutí prstem */
+.kapitola-obsah a {
+  display: block;
+  min-height: 44px;
+  padding: 10px 0;
+  color: #1f5fbf;
+}
+
+/* Text kapitoly: o něco větší písmo a větší řádkování, aby se dobře četlo.
+   Šířku omezuje main (600 px), to dává příjemnou délku řádku. Dlouhá slova se zalomí,
+   aby stránka nikdy nešla posouvat do strany. */
+.kniha-text {
+  font-size: 1.0625rem; /* 17 px */
+  line-height: 1.65;
+  overflow-wrap: break-word;
+}
+
+.kniha-text p {
+  margin: 0 0 1em;
+}
+
+.kniha-text ul,
+.kniha-text ol {
+  margin: 0 0 1em;
+  padding-left: 24px;
+}
+
+.kniha-text li {
+  margin: 0 0 0.4em;
+}
+
+/* Vnořený seznam: menší mezera nad ním */
+.kniha-text li > ul,
+.kniha-text li > ol {
+  margin: 0.4em 0 0;
+}
+
+.kniha-nazev-kapitoly {
+  margin: 0 0 16px;
+  font-size: 1.35rem;
+  line-height: 1.3;
+}
+
+/* Část kapitoly (##); scroll-margin = při odrolování z obsahu nadpis nebude nalepený na okraji */
+.kniha-cast {
+  scroll-margin-top: 12px;
+}
+
+.kniha-cast h3 {
+  margin: 1.6em 0 0.6em;
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+/* Rámečky: „Na zkoušce“ (chyták v testu) a praktická rada (Tip, Pozor, Důležité) */
+.kniha-ramecek {
+  margin: 0 0 1em;
+  padding: 12px 14px;
+  border-left: 5px solid;
+  border-radius: 8px;
+}
+
+.kniha-ramecek p {
+  margin: 0;
+}
+
+.kniha-ramecek-zkouska {
+  background: #fdf1e4;
+  border-color: #d9822b;
+}
+
+.kniha-ramecek-rada {
+  background: #e9f5ec;
+  border-color: #2e8b4e;
+}
+
+/* „Shrnutí do kapsy“ na konci kapitoly */
+.kniha-shrnuti {
+  margin-top: 1.6em;
+  padding: 4px 16px 4px;
+  background: #eaf1fb;
+  border: 2px solid #1f5fbf;
+  border-radius: 12px;
+}
+
+.kniha-shrnuti h3 {
+  margin-top: 0.8em;
+}
+
+/* Řádek „Otázky v testu: …“ */
+.kniha-otazky {
+  color: #6b6b6b;
+  font-size: 1rem;
+}
+
+/* Obrázky: víc obrázků vedle sebe; na úzkém telefonu se samy zalomí pod sebe */
+.kniha-obrazky {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin: 0 0 1em;
+}
+
+.kniha-obrazek {
+  flex: 1 1 220px;
+  margin: 0;
+  min-width: 0;
+}
+
+.kniha-obrazek img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 0 auto;
+  background: #ffffff;
+}
+
+.kniha-obrazek figcaption {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-style: italic;
+  line-height: 1.5;
+  color: #444444;
+}
+
+/* Předchozí / Další kapitola vedle sebe */
+.kapitola-navigace {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.kapitola-navigace .tlacitko-zpet {
+  flex: 1 1 0;
+  margin-bottom: 0;
+}
+
+.tlacitko-zpet:disabled {
+  opacity: 0.4;
+}
